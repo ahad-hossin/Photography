@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Yokitori</title>
-<meta name="description" content="Photographs by Yokitori (Ahad Hossin) — based in Dhaka, Bangladesh."/>
-<meta name="author" content="Ahad Hossin"/>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%230a0a0a'/><path d='M725 465 644 433 179 1298Q166 1323 153.5 1333.0Q141 1343 119 1347L83 1355Q59 1360 52.0 1365.5Q45 1371 45 1379Q45 1389 53.5 1394.5Q62 1400 79 1400H447Q465 1400 476.0 1394.5Q487 1389 487 1379Q487 1361 441 1354L367 1345Q323 1338 312.5 1325.0Q302 1312 315 1286L720 525L674 492L1079 1250Q1102 1292 1091.5 1315.0Q1081 1338 1034 1345L948 1356Q932 1358 924.0 1364.0Q916 1370 916 1379Q916 1389 924.5 1394.5Q933 1400 949 1400H1268Q1285 1400 1294.0 1394.5Q1303 1389 1303 1379Q1303 1371 1296.5 1365.5Q1290 1360 1265 1354L1250 1350Q1228 1346 1212.0 1336.0Q1196 1326 1181.0 1306.0Q1166 1286 1147 1249ZM620 504H738V104Q738 84 750.5 72.0Q763 60 786 56L867 45Q897 39 897 21Q897 12 890.0 6.0Q883 0 867 0H491Q475 0 467.5 6.0Q460 12 460 21Q460 39 491 45L571 56Q594 60 607.0 72.0Q620 84 620 104Z' fill='%23ededed' transform='translate(10.43 54.4) scale(0.032 -0.032)'/></svg>"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
+<html lang="en" data-src-loc="16:32:148817">
+<head data-src-loc="33:39:44845">
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{var $=["https://claude.ai","https://preview.claude.ai","https://eap-omelette.claude.ai"];var F=30000;var A=3000;document.addEventListener("DOMContentLoaded",()=>{const Q="transform-react-jsx-source";document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((J,V)=>{const X=J.getAttribute("data-plugins")||"";if(X.indexOf(Q)<0){J.setAttribute("data-plugins",X?`${X},${Q}`:Q)}if(!J.hasAttribute("data-filename")){J.setAttribute("data-filename",J.getAttribute("src")||`inline-${V}`)}})});var W=window.parent;if(W&&W!==window){const Q=(z,k)=>{try{W.postMessage({__omelette_log:true,type:z,data:k},"*")}catch{}};["log","warn","error"].forEach((z)=>{const k=console[z];console[z]=(...C)=>{const D=C.map((w)=>{try{return typeof w==="object"?JSON.stringify(w):String(w)}catch{try{return String(w)}catch{return"[unstringifiable]"}}}).join(" ");Q(z,D);k.apply(console,C)}});window.addEventListener("error",(z)=>{const k=z.target;if(k&&k!==window&&k.tagName){const C=k.src||k.href||"";Q("resource_error",`${k.tagName} failed to load: ${C}`)}else{Q("error",`${z.message||"Unknown error"} at ${z.filename||"?"}:${z.lineno||0}:${z.colno||0}`)}},true);window.addEventListener("unhandledrejection",(z)=>{const k=z.reason;const C=k instanceof Error?`${k.message} ${k.stack}`:String(k);Q("error",`Unhandled rejection: ${C}`)});const J=()=>{try{W.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(document.readyState==="complete")J();else window.addEventListener("load",J);if(window.ResizeObserver)new ResizeObserver(J).observe(document.documentElement);const V={};let X=0;window.claude={complete(z){return new Promise((k,C)=>{if(!$.length){C(new Error("claude.complete: no parent origin"));return}const D=`c${++X}`;const w=()=>setTimeout(()=>{delete V[D];C(new Error(`claude.complete: no data for ${F/1000}s`))},F);const K=w();V[D]={resolve:k,reject:C,text:"",t:K,arm:w};try{for(const Z of $){W.postMessage({__om_api:true,id:D,body:z},Z)}}catch(Z){clearTimeout(K);delete V[D];C(Z)}})}};const Y={};let h=0;window.omelette={writeFile:(z,k)=>new Promise((C,D)=>{if(!$.length){C();return}const w=`f${++h}`;const K=setTimeout(()=>{delete Y[w];C()},A);Y[w]={resolve:C,reject:D,t:K};try{for(const Z of $){W.postMessage({__om_file:true,id:w,op:"write",path:z,content:k},Z)}}catch{clearTimeout(K);delete Y[w];C()}})};const b=(z)=>{try{return JSON.stringify(z)}catch{return JSON.stringify(String(z))}};window.addEventListener("message",(z)=>{if($.indexOf(z.origin)<0)return;if(z.source!==W)return;const k=z.data;if(!k)return;if(k.__om_file_r){const w=Y[k.id];if(!w)return;clearTimeout(w.t);delete Y[k.id];if(k.ok)w.resolve();else w.reject(new Error(k.error||"write failed"));return}if(k.__om_api_r){const w=V[k.id];if(!w)return;if(k.error!=null){clearTimeout(w.t);delete V[k.id];w.reject(new Error(k.error));return}if(k.chunk!=null){clearTimeout(w.t);w.t=w.arm();w.text+=k.chunk;return}if(k.done){clearTimeout(w.t);delete V[k.id];w.resolve(k.text!=null?k.text:w.text);return}return}if(!k.__om_eval)return;const C=k;const D=(w)=>{z.source.postMessage({...w,__om_eval_r:1,id:C.id},z.origin)};try{const w=(0,eval)(C.code);if(w&&typeof w.then==="function"){w.then((K)=>D({ok:1,v:b(K)}),(K)=>D({ok:0,e:String(K)}))}else{D({ok:1,v:b(w)})}}catch(w){D({ok:0,e:String(w)})}})}})();
+</script>
+
+<meta charset="UTF-8"  data-src-loc="40:64:64"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"  data-src-loc="65:137:137"/>
+<title data-src-loc="138:145:177">Yokitori — Photographs</title>
+<meta name="description" content="Photographs by Yokitori."  data-src-loc="178:240:240"/>
+<link rel="preconnect" href="https://fonts.googleapis.com" data-src-loc="241:300:300">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin data-src-loc="301:369:369">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" data-src-loc="370:539:539">
+<style data-src-loc="540:547:44837">
 /* =========================================================================
    FOUNDATION
    ========================================================================= */
@@ -1300,6 +1301,41 @@ body.arranging.filters-active .arrange-notice { display: block; }
   color: var(--ink-dimmer);
 }
 
+/* Coordinates — clickable link to Google Maps. Only shown if set. */
+.md-coords {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: -22px 0 36px;
+}
+.md-coords a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--ink-dimmer);
+  padding: 2px 0;
+  transition: color 0.25s, border-color 0.25s, transform 0.25s;
+}
+.md-coords a:hover {
+  color: var(--rec);
+  border-bottom-color: var(--rec);
+}
+.md-coords a:active { transform: translateY(1px); }
+.md-coords svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.md-coords .ext {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dimmer);
+  margin-left: 2px;
+}
+
 .md-body {
   font-family: var(--f-display);
   font-weight: 300;
@@ -1631,202 +1667,204 @@ body.arranging.filters-active .arrange-notice { display: block; }
 }
 </style>
 </head>
-<body>
+<body data-src-loc="44846:44852:148809">
 
 <!-- Film grain overlay -->
-<div class="grain"></div>
+<div class="grain" data-src-loc="44882:44901:44907"></div>
 
 <!-- Page corner brackets -->
-<div class="vf tl"></div><div class="vf tr"></div>
-<div class="vf bl"></div><div class="vf br"></div>
+<div class="vf tl" data-src-loc="44939:44958:44964"></div><div class="vf tr" data-src-loc="44964:44983:44989"></div>
+<div class="vf bl" data-src-loc="44990:45009:45015"></div><div class="vf br" data-src-loc="45015:45034:45040"></div>
 
 <!-- Custom cursor -->
-<div class="cur" id="cur">
-  <div class="cur-box">
-    <div class="cur-corner tl"></div><div class="cur-corner tr"></div>
-    <div class="cur-corner bl"></div><div class="cur-corner br"></div>
-    <div class="cur-dot"></div>
+<div class="cur" id="cur" data-src-loc="45065:45091:45356">
+  <div class="cur-box" data-src-loc="45094:45115:45298">
+    <div class="cur-corner tl" data-src-loc="45120:45147:45153"></div><div class="cur-corner tr" data-src-loc="45153:45180:45186"></div>
+    <div class="cur-corner bl" data-src-loc="45191:45218:45224"></div><div class="cur-corner br" data-src-loc="45224:45251:45257"></div>
+    <div class="cur-dot" data-src-loc="45262:45283:45289"></div>
   </div>
-  <div class="cur-label" id="curLabel">FOCUS</div>
+  <div class="cur-label" id="curLabel" data-src-loc="45301:45338:45349">FOCUS</div>
 </div>
 
 <!-- Boot sequence -->
-<div class="boot" id="boot">
-  <div class="boot-wordmark">Yokitori</div>
-  <div class="boot-log" id="bootLog">&gt; SYS INIT</div>
-  <div class="boot-bar"></div>
-  <div class="boot-hint">tap to skip</div>
+<div class="boot" id="boot" data-src-loc="45381:45409:45591">
+  <div class="boot-wordmark" data-src-loc="45412:45439:45453">Yokitori</div>
+  <div class="boot-log" id="bootLog" data-src-loc="45456:45491:45510">&gt; SYS INIT</div>
+  <div class="boot-bar" data-src-loc="45513:45535:45541"></div>
+  <div class="boot-hint" data-src-loc="45544:45567:45584">tap to skip</div>
 </div>
 
 <!-- Aperture iris (plays when opening a photo) -->
-<div class="iris" id="iris">
-  <div class="iris-blade"></div><div class="iris-blade"></div>
-  <div class="iris-blade"></div><div class="iris-blade"></div>
-  <div class="iris-blade"></div><div class="iris-blade"></div>
+<div class="iris" id="iris" data-src-loc="45645:45673:45869">
+  <div class="iris-blade" data-src-loc="45676:45700:45706"></div><div class="iris-blade" data-src-loc="45706:45730:45736"></div>
+  <div class="iris-blade" data-src-loc="45739:45763:45769"></div><div class="iris-blade" data-src-loc="45769:45793:45799"></div>
+  <div class="iris-blade" data-src-loc="45802:45826:45832"></div><div class="iris-blade" data-src-loc="45832:45856:45862"></div>
 </div>
 
 <!-- Nav -->
-<header class="nav">
-  <div class="nav-mark">Yokitori</div>
-  <nav class="nav-links">
-    <a href="#work" data-num="01">Work</a>
-    <a href="#contact" data-num="02">Contact</a>
+<header class="nav" data-src-loc="45884:45904:46080">
+  <div class="nav-mark" data-src-loc="45907:45929:45943">Yokitori</div>
+  <nav class="nav-links" data-src-loc="45946:45969:46070">
+    <a href="#work" data-num="01" data-src-loc="45974:46004:46012">Work</a>
+    <a href="#contact" data-num="02" data-src-loc="46017:46050:46061">Contact</a>
   </nav>
 </header>
 
 <!-- Hero -->
-<section class="hero">
-  <div class="hud top-left">
-    <span class="rec"><span class="rec-dot"></span>REC</span>
-    <span id="heroDate">—</span>
+<section class="hero" data-src-loc="46096:46118:47173">
+  <div class="hud top-left" data-src-loc="46121:46147:46253">
+    <span class="rec" data-src-loc="46152:46170:46209"><span class="rec-dot" data-src-loc="46170:46192:46199"></span>REC</span>
+    <span id="heroDate" data-src-loc="46214:46234:46244">—</span>
   </div>
-  <div class="hud top-right">
-    <span id="clock">00:00:00</span>
-    <span>SESSION</span>
+  <div class="hud top-right" data-src-loc="46256:46283:46354">
+    <span id="clock" data-src-loc="46288:46305:46320">00:00:00</span>
+    <span data-src-loc="46325:46331:46345">SESSION</span>
   </div>
-  <div class="hud bot-left">
-    <span class="chip"><span class="k">ISO</span>400</span>
-    <span class="chip"><span class="k">F</span>2.8</span>
-    <span class="chip"><span class="k">S</span>1/125</span>
-    <span class="chip"><span class="k">WB</span>5200K</span>
+  <div class="hud bot-left" data-src-loc="46357:46383:46631">
+    <span class="chip" data-src-loc="46388:46407:46443"><span class="k" data-src-loc="46407:46423:46433">ISO</span>400</span>
+    <span class="chip" data-src-loc="46448:46467:46501"><span class="k" data-src-loc="46467:46483:46491">F</span>2.8</span>
+    <span class="chip" data-src-loc="46506:46525:46561"><span class="k" data-src-loc="46525:46541:46549">S</span>1/125</span>
+    <span class="chip" data-src-loc="46566:46585:46622"><span class="k" data-src-loc="46585:46601:46610">WB</span>5200K</span>
   </div>
-  <div class="hud bot-right">
-    <span class="chip"><b style="color:var(--ink)">Ahad Hossin</b></span>
-    <span class="chip"><span class="k">AF</span><b style="color:var(--focus)">LOCK</b></span>
+  <div class="hud bot-right" data-src-loc="46634:46661:46904">
+    <span class="chip" data-src-loc="46666:46685:46801"><span class="k" data-src-loc="46685:46701:46711">FRM</span><b style="color:var(--ink)" id="heroFrm" data-src-loc="46711:46752:46759">001</b>/<span id="heroFrmTotal" data-src-loc="46760:46784:46794">018</span></span>
+    <span class="chip" data-src-loc="46806:46825:46895"><span class="k" data-src-loc="46825:46841:46850">AF</span><b style="color:var(--focus)" data-src-loc="46850:46880:46888">LOCK</b></span>
   </div>
 
-  <div class="hero-center">
-    <div class="hero-kicker">Photographs</div>
-    <h1 class="hero-title"><span class="word">Yokitori</span></h1>
-    <div class="hero-sub">Wherever the light is<span class="caret"></span></div>
+  <div class="hero-center" data-src-loc="46908:46933:47162">
+    <div class="hero-kicker" data-src-loc="46938:46963:46997">Photographs</div>
+    <h1 class="hero-title" data-src-loc="47002:47025:47064"><span class="word" data-src-loc="47025:47044:47059">Yokitori</span></h1>
+    <div class="hero-sub" data-src-loc="47069:47091:47153">Wherever the light is<span class="caret" data-src-loc="47120:47140:47147"></span></div>
   </div>
 </section>
 
 <!-- Gallery -->
-<section class="gallery" id="work">
-  <div class="gallery-head">
-    <div class="gh-left">Live · Selected Frames</div>
-    <div class="gh-center" id="yearFilter" role="tablist" aria-label="Filter by year"></div>
-    <div><span id="frameCount">018</span> Frames</div>
+<section class="gallery" id="work" data-src-loc="47192:47227:48027">
+  <div class="gallery-head" data-src-loc="47230:47256:47485">
+    <div class="gh-left" data-src-loc="47261:47282:47311">Live · Selected Frames</div>
+    <div class="gh-center" id="yearFilter" role="tablist" aria-label="Filter by year" data-src-loc="47316:47398:47404"></div>
+    <div data-src-loc="47409:47414:47476"><span id="frameCount" data-src-loc="47414:47436:47446">018</span> Frames</div>
   </div>
-  <div class="month-filter" id="monthFilter" role="tablist" aria-label="Filter by month"></div>
-  <div class="arrange-notice">Viewing a filtered subset · cutoffs and reordering apply to this view</div>
-  <div class="grid" id="grid"></div>
-  <div class="grid-more" id="gridMore">
+  <div class="month-filter" id="monthFilter" role="tablist" aria-label="Filter by month" data-src-loc="47488:47575:47581"></div>
+  <div class="arrange-notice" data-src-loc="47584:47612:47688">Viewing a filtered subset · cutoffs and reordering apply to this view</div>
+  <div class="grid" id="grid" data-src-loc="47691:47719:47725"></div>
+  <div class="grid-more" id="gridMore" data-src-loc="47728:47765:48016">
     <button type="button" class="see-more less" id="seeLessBtn" hidden>
       <span class="sm-arrow" aria-hidden="true">↑</span>
       <span class="sm-label">See fewer</span>
     </button>
-    <button type="button" class="see-more" id="seeMoreBtn">
-      <span class="sm-label">See more</span>
-      <span class="sm-count" id="seeMoreCount">+00</span>
-      <span class="sm-arrow" aria-hidden="true">↓</span>
+    <button type="button" class="see-more" id="seeMoreBtn" data-src-loc="47770:47825:48007">
+      <span class="sm-label" data-src-loc="47832:47855:47876">See more</span>
+      <span class="sm-count" id="seeMoreCount" data-src-loc="47883:47924:47934">+00</span>
+      <span class="sm-arrow" aria-hidden="true" data-src-loc="47941:47983:47993">↓</span>
     </button>
   </div>
 </section>
 
 <!-- Footer -->
-<footer class="foot" id="contact">
-  <div class="foot-big">
-    <span>Yoki</span>
-    <span class="rec-inline"></span>
+<footer class="foot" id="contact" data-src-loc="48045:48079:48897">
+  <div class="foot-big" data-src-loc="48082:48104:48172">
+    <span data-src-loc="48109:48115:48126">Yoki</span>
+    <span class="rec-inline" data-src-loc="48131:48156:48163"></span>
   </div>
-  <div class="foot-grid">
-    <div class="foot-col">
-      <h4>Contact</h4>
-      <p><a href="mailto:ahadhossinart@gmail.com">ahadhossinart@gmail.com</a></p>
+  <div class="foot-grid" data-src-loc="48175:48198:48747">
+    <div class="foot-col" data-src-loc="48203:48225:48476">
+      <h4 data-src-loc="48232:48236:48248">Contact</h4>
+      <p data-src-loc="48255:48258:48465"><a href="/cdn-cgi/l/email-protection#563e333a3a39162f393d3f2239243f78252223323f39" data-src-loc="48258:48341:48461"><span class="__cf_email__" data-cfemail="2f474a4343406f564044465b405d46015c5b5a4b4640" data-src-loc="48341:48428:48457">[email&#160;protected]</span></a></p>
     </div>
-    <div class="foot-col">
-      <h4>Elsewhere</h4>
-      <p>
-        <a href="https://www.instagram.com/yokitori_sama/" target="_blank" rel="noopener">Instagram</a>
+    <div class="foot-col" data-src-loc="48481:48503:48630">
+      <h4 data-src-loc="48510:48514:48528">Elsewhere</h4>
+      <p data-src-loc="48535:48538:48619">
+        <a href="#" data-src-loc="48547:48559:48572">Instagram</a><br data-src-loc="48572:48577:48577"/>
+        <a href="#" data-src-loc="48586:48598:48608">Are.na</a>
       </p>
     </div>
-    <div class="foot-col">
-      <h4>Based in</h4>
-      <p>Dhaka, Bangladesh</p>
+    <div class="foot-col" data-src-loc="48635:48657:48738">
+      <h4 data-src-loc="48664:48668:48679">Studio</h4>
+      <p data-src-loc="48686:48689:48727">Setagaya, Tokyo<br data-src-loc="48704:48709:48709"/>By appointment</p>
     </div>
   </div>
-  <div class="foot-bot">
-    <span class="end-of-roll">End of roll</span>
-    <span>© 2026 Ahad Hossin · All frames reserved</span>
+  <div class="foot-bot" data-src-loc="48750:48772:48887">
+    <span class="end-of-roll" data-src-loc="48777:48803:48821">End of roll</span>
+    <span data-src-loc="48826:48832:48878">© 2026 Yokitori · All frames reserved</span>
   </div>
 </footer>
 
 <!-- Persistent bottom status bar -->
-<div class="status" id="status">
-  <div class="scroll-prog" id="scrollProg"></div>
-  <div class="st-cell">
-    <span class="k">BATT</span>
-    <span class="battery"><span class="battery-fill" id="battFill"></span></span>
-    <span class="v" id="battTxt">72%</span>
+<div class="status" id="status" data-src-loc="48937:48969:49819">
+  <div class="scroll-prog" id="scrollProg" data-src-loc="48972:49013:49019"></div>
+  <div class="st-cell" data-src-loc="49022:49043:49210">
+    <span class="k" data-src-loc="49048:49064:49075">BATT</span>
+    <span class="battery" data-src-loc="49080:49102:49157"><span class="battery-fill" id="battFill" data-src-loc="49102:49143:49150"></span></span>
+    <span class="v" id="battTxt" data-src-loc="49162:49191:49201">72%</span>
   </div>
-  <div class="st-cell st-hide-mobile">
-    <span class="k">MEM</span>
-    <span class="v"><span id="memUsed">00247</span> / 00999 FRM</span>
+  <div class="st-cell st-hide-mobile" data-src-loc="49213:49249:49360">
+    <span class="k" data-src-loc="49254:49270:49280">MEM</span>
+    <span class="v" data-src-loc="49285:49301:49351"><span id="memUsed" data-src-loc="49301:49320:49332">00247</span> / 00999 FRM</span>
   </div>
-  <div class="st-cell">
-    <span class="k">SHOTS</span>
-    <span class="v"><b id="shotCount" style="color:var(--ink)">000</b> taken</span>
+  <div class="st-cell" data-src-loc="49363:49384:49510">
+    <span class="k" data-src-loc="49389:49405:49417">SHOTS</span>
+    <span class="v" data-src-loc="49422:49438:49501"><b id="shotCount" style="color:var(--ink)" data-src-loc="49438:49481:49488">000</b> taken</span>
   </div>
-  <div class="st-cell st-hide-mobile">
-    <span class="k">GPS</span>
-    <span class="v">Dhaka, Bangladesh</span>
+  <div class="st-cell st-hide-mobile" data-src-loc="49513:49549:49637">
+    <span class="k" data-src-loc="49554:49570:49580">GPS</span>
+    <span class="v" data-src-loc="49585:49601:49628">Dhaka, Bangladesh</span>
   </div>
-  <div class="st-cell">
-    <span class="k">FRM</span>
-    <span class="v"><b id="sbFrame" style="color:var(--ink)">001</b>/<span id="sbFrameTotal">018</span></span>
+  <div class="st-cell" data-src-loc="49640:49661:49812">
+    <span class="k" data-src-loc="49666:49682:49692">FRM</span>
+    <span class="v" data-src-loc="49697:49713:49803"><b id="sbFrame" style="color:var(--ink)" data-src-loc="49713:49754:49761">001</b>/<span id="sbFrameTotal" data-src-loc="49762:49786:49796">018</span></span>
   </div>
 </div>
 
 <!-- Modal -->
-<div class="modal" id="modal" aria-hidden="true">
-  <div class="modal-label">
-    <span class="chip">Detail</span>
-    <span id="mLabelNum">N° 000</span>
+<div class="modal" id="modal" aria-hidden="true" data-src-loc="49836:49885:51312">
+  <div class="modal-label" data-src-loc="49888:49913:49999">
+    <span class="chip" data-src-loc="49918:49937:49950">Detail</span>
+    <span id="mLabelNum" data-src-loc="49955:49976:49990">N° 000</span>
   </div>
-  <button class="modal-close" id="mClose" aria-label="Close">CLOSE</button>
-  <button class="modal-nav prev" id="mPrev" aria-label="Previous">‹</button>
-  <button class="modal-nav next" id="mNext" aria-label="Next">›</button>
+  <button class="modal-close" id="mClose" aria-label="Close" data-src-loc="50002:50061:50075">CLOSE</button>
+  <button class="modal-nav prev" id="mPrev" aria-label="Previous" data-src-loc="50078:50142:50154">‹</button>
+  <button class="modal-nav next" id="mNext" aria-label="Next" data-src-loc="50157:50217:50229">›</button>
 
-  <div class="modal-inner">
-    <div class="modal-img-wrap">
-      <div class="modal-img-frame">
-        <div class="vb tl"></div><div class="vb tr"></div>
-        <div class="vb bl"></div><div class="vb br"></div>
-        <img id="mImg" draggable="false" oncontextmenu="return false" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt=""/>
+  <div class="modal-inner" data-src-loc="50233:50258:51036">
+    <div class="modal-img-wrap" data-src-loc="50263:50291:50709">
+      <div class="modal-img-frame" data-src-loc="50298:50327:50619">
+        <div class="vb tl" data-src-loc="50336:50355:50361"></div><div class="vb tr" data-src-loc="50361:50380:50386"></div>
+        <div class="vb bl" data-src-loc="50395:50414:50420"></div><div class="vb br" data-src-loc="50420:50439:50445"></div>
+        <img id="mImg" draggable="false" oncontextmenu="return false" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt=""  data-src-loc="50454:50606:50606"/>
       </div>
-      <div class="magnify-hint" hidden><span class="dot"></span>Hold to magnify</div>
+      <div class="magnify-hint" data-src-loc="50626:50652:50698" hidden><span class="dot" data-src-loc="50652:50670:50677"></span>Hold to magnify</div>
     </div>
-    <div class="modal-data">
-      <div>
-        <div class="md-head" id="mKicker">Frame N° 000</div>
-        <h2 class="md-title" id="mTitle">—</h2>
-        <div class="md-subline" id="mSubline"></div>
-        <p class="md-body" id="mBody">—</p>
+    <div class="modal-data" data-src-loc="50714:50738:51027">
+      <div data-src-loc="50745:50750:50974">
+        <div class="md-head" id="mKicker" data-src-loc="50759:50793:50812">Frame N° 000</div>
+        <h2 class="md-title" id="mTitle" data-src-loc="50821:50854:50862">—</h2>
+        <div class="md-subline" id="mSubline" data-src-loc="50871:50909:50915"></div>
+        <div class="md-coords" id="mCoords" hidden></div>
+        <p class="md-body" id="mBody" data-src-loc="50924:50954:50961">—</p>
       </div>
-      <div class="exif" id="mExif"></div>
+      <div class="exif" id="mExif" data-src-loc="50981:51010:51016"></div>
     </div>
   </div>
 
-  <div class="kbd-hint">
-    <span class="kbd">←</span><span class="kbd">→</span>
-    <span style="margin-left:6px">NAV</span>
-    <span class="kbd" style="margin-left:10px">ESC</span>
-    <span>CLOSE</span>
+  <div class="kbd-hint" data-src-loc="51040:51062:51258">
+    <span class="kbd" data-src-loc="51067:51085:51095">←</span><span class="kbd" data-src-loc="51095:51113:51123">→</span>
+    <span style="margin-left:6px" data-src-loc="51128:51158:51168">NAV</span>
+    <span class="kbd" style="margin-left:10px" data-src-loc="51173:51216:51226">ESC</span>
+    <span data-src-loc="51231:51237:51249">CLOSE</span>
   </div>
 
-  <div class="modal-strip" id="mStrip"></div>
+  <div class="modal-strip" id="mStrip" data-src-loc="51262:51299:51305"></div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js" data-src-loc="51314:51413:51422"></script><script data-src-loc="51422:51430:100608">
 /* =========================================================================
    PHOTO DATA — auto-discovered from GitHub
    -------------------------------------------------------------------------
    To add a new photo:
      1. Upload the image (e.g. 24_07_2024_yokitori.webp) into /photos
      2. Optionally upload a sidecar 24_07_2024_yokitori.json with any of:
-          { "title": "...", "loc": "...", "date": "...", "body": "...",
+          { "title": "...", "loc": "...", "coords": "...", "date": "...", "body": "...",
             "exif": { camera, lens, iso, f, s, focal } }
      3. Push to GitHub. That's it — the gallery auto-discovers it.
 
@@ -1992,6 +2030,7 @@ async function loadFromGitHub() {
       key:   'local',
       title: e.title || autoTitle,
       loc:   e.loc   || '',
+      coords: e.coords || '',
       date:  e.date  || autoDate,
       body:  e.body  || '',
       img:   `${path}/${encodeURIComponent(fname)}`,
@@ -2054,7 +2093,7 @@ async function loadFromGitHub() {
    in the main (unfiltered) view. For each image filename, we try to load
    photos/<basename>.json which may contain any subset of:
 
-       { "title": "...", "loc": "...", "date": "...",
+       { "title": "...", "loc": "...", "coords": "...", "date": "...",
          "body":  "...", "exif": { camera, lens, iso, f, s, focal } }
 
    Missing sidecar → defaults derived from filename (if it matches
@@ -2133,6 +2172,7 @@ async function loadFromLocalManifest(txtPath = 'photos/photos.txt') {
       key:   'local',
       title: e.title || autoTitle,
       loc:   e.loc   || '',
+      coords: e.coords || '',
       date:  e.date  || autoDate,
       body:  e.body  || '',
       img:   `photos/${encodeURIComponent(fname)}`,
@@ -2584,7 +2624,9 @@ function renderGrid() {
 
   const total = String(list.length).padStart(3, '0');
   frameCount.textContent = total;
+  const heroFrmTotal = document.getElementById('heroFrmTotal');
   const sbFrameTotal = document.getElementById('sbFrameTotal');
+  if (heroFrmTotal) heroFrmTotal.textContent = total;
   if (sbFrameTotal) sbFrameTotal.textContent = total;
 
   // See-more button: hidden while arranging (full list is always shown).
@@ -2918,11 +2960,51 @@ renderGrid();
 /* =========================================================================
    MODAL — with iris, keyboard nav, thumbs, typing EXIF
    ========================================================================= */
+
+/* Coordinate helpers — accept DMS (e.g. 26°27'14.6"N 88°36'50.0"E) or plain
+   decimal ("26.4540, 88.6139") and build a Google Maps URL. Falls back to
+   passing the raw string to Maps if parsing fails. */
+function parseCoords(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+
+  // DMS: 26°27'14.6"N 88°36'50.0"E   (also accepts ′ ″ and , separator)
+  const dms = s.match(
+    /^\s*(\d+)\s*[°º]\s*(\d+)\s*['′]\s*([\d.]+)\s*["″]\s*([NSns])[\s,]+(\d+)\s*[°º]\s*(\d+)\s*['′]\s*([\d.]+)\s*["″]\s*([EWew])\s*$/
+  );
+  if (dms) {
+    const toDec = (d, m, sec, hem) => {
+      let v = +d + (+m) / 60 + (+sec) / 3600;
+      if (/[SsWw]/.test(hem)) v = -v;
+      return v;
+    };
+    const lat = toDec(dms[1], dms[2], dms[3], dms[4]);
+    const lng = toDec(dms[5], dms[6], dms[7], dms[8]);
+    return { lat, lng };
+  }
+
+  // Decimal: 26.4540, 88.6139   (also accepts space separator)
+  const dec = s.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,\s]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (dec) {
+    return { lat: +dec[1], lng: +dec[2] };
+  }
+  return null;
+}
+
+function googleMapsUrlFor(raw) {
+  const parsed = parseCoords(raw);
+  if (parsed) {
+    return `https://www.google.com/maps?q=${parsed.lat.toFixed(6)},${parsed.lng.toFixed(6)}`;
+  }
+  return `https://www.google.com/maps?q=${encodeURIComponent(String(raw).trim())}`;
+}
+
 const modal = document.getElementById('modal');
 const mImg = document.getElementById('mImg');
 const mTitle = document.getElementById('mTitle');
 const mKicker = document.getElementById('mKicker');
 const mSubline = document.getElementById('mSubline');
+const mCoords = document.getElementById('mCoords');
 const mBody = document.getElementById('mBody');
 const mExif = document.getElementById('mExif');
 const mLabelNum = document.getElementById('mLabelNum');
@@ -3014,6 +3096,29 @@ function renderPhoto(i) {
     mKicker.textContent = `Frame N° ${p.num}`;
     mLabelNum.textContent = `N° ${p.num}`;
     mSubline.innerHTML = `<span>${p.loc}</span><span>${p.date}</span>`;
+
+    // Coordinates — only render if set, click opens Google Maps in new tab
+    if (p.coords && String(p.coords).trim()) {
+      const raw = String(p.coords).trim();
+      const url = googleMapsUrlFor(raw);
+      const safeLabel = raw.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+      mCoords.innerHTML =
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" title="Open in Google Maps">` +
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+            `<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>` +
+            `<circle cx="12" cy="10" r="3"/>` +
+          `</svg>` +
+          `<span>${safeLabel}</span>` +
+          `<span class="ext">↗</span>` +
+        `</a>`;
+      mCoords.hidden = false;
+    } else {
+      mCoords.innerHTML = '';
+      mCoords.hidden = true;
+    }
+
     mBody.textContent = p.body;
 
     // Build EXIF cells, stagger them in
@@ -3200,6 +3305,7 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
    ========================================================================= */
 (function scrollTelemetry(){
   const sbFrame  = document.getElementById('sbFrame');
+  const heroFrm  = document.getElementById('heroFrm');
   const prog     = document.getElementById('scrollProg');
 
   function onScroll(){
@@ -3216,6 +3322,7 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     });
     const padded = String(Math.max(1, active)).padStart(3, '0');
     sbFrame.textContent = padded;
+    heroFrm.textContent = padded;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
