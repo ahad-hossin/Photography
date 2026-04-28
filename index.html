@@ -3225,6 +3225,46 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* =========================================================================
+   TOUCH SWIPE — swipe left/right inside the modal photo area to step
+   between photos (mobile). Listeners are passive (no preventDefault), so
+   vertical scrolling inside the modal keeps working — we only treat a
+   gesture as a "swipe" when the horizontal travel passes a threshold AND
+   clearly dominates the vertical travel. Multi-touch (pinch) is ignored.
+   The existing press-and-hold magnify on the image runs in parallel; it
+   ends on touchend before this handler fires, so its zoom-out finishes
+   before the swipe transition.
+   ========================================================================= */
+(function modalSwipe(){
+  const wrap = document.querySelector('.modal-img-wrap');
+  if (!wrap) return;
+  let startX = 0, startY = 0, tracking = false;
+  const THRESHOLD = 50;     // min horizontal travel in px to count as a swipe
+  const H_DOMINANCE = 1.3;  // horizontal must beat vertical by this factor
+
+  wrap.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) { tracking = false; return; }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    if (!modal.classList.contains('open')) return;
+    const t  = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    if (Math.abs(dx) >= THRESHOLD && Math.abs(dx) > Math.abs(dy) * H_DOMINANCE) {
+      if (dx > 0) prevPhoto();   // swipe right → previous (matches arrow-left)
+      else        nextPhoto();   // swipe left  → next     (matches arrow-right)
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+})();
+
+/* =========================================================================
    SCROLL REVEAL
    ========================================================================= */
 const io = new IntersectionObserver((entries) => {
