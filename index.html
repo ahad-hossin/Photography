@@ -1351,6 +1351,28 @@ body.arranging.filters-active .arrange-notice { display: block; }
   margin-bottom: 40px;
 }
 
+/* Text swap transition — when navigating between photos, all text fields
+   fade and lift together. Mirrors the .exif-cell pattern below for a
+   visually consistent feel. The .text-swap class is toggled on the modal
+   by renderPhoto() to drive both the fade-out and the fade-in. */
+#mLabelNum,
+.md-head,
+.md-title,
+.md-subline,
+.md-coords,
+.md-body {
+  transition: opacity 0.38s var(--ease), transform 0.38s var(--ease);
+}
+.modal.text-swap #mLabelNum,
+.modal.text-swap .md-head,
+.modal.text-swap .md-title,
+.modal.text-swap .md-subline,
+.modal.text-swap .md-coords,
+.modal.text-swap .md-body {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
 /* EXIF readout */
 .exif {
   border-top: 1px solid var(--line-2);
@@ -3088,8 +3110,10 @@ function renderPhoto(i) {
   const p = PHOTOS[i];
   // Fade image out during swap
   mImg.classList.remove('shown');
-  mTitle.style.opacity = 0;
-  mBody.style.opacity = 0;
+  // Trigger the text-swap transition: all text fields (label, kicker, title,
+  // subline, coords, body) fade out and lift via CSS while we wait the 150ms
+  // before swapping in the new content.
+  modal.classList.add('text-swap');
   setTimeout(() => {
     mImg.src = p.img;
     mImg.alt = p.title;
@@ -3135,11 +3159,11 @@ function renderPhoto(i) {
       `<div class="exif-cell"><span class="k">${k}</span><span class="v">${v}</span></div>`
     ).join('');
 
-    // Animate entries
-    mTitle.style.transition = 'opacity 0.45s';
-    mBody.style.transition = 'opacity 0.6s';
-    mTitle.style.opacity = 1;
-    mBody.style.opacity = 1;
+    // Animate entries — remove .text-swap on the next frame so the browser
+    // commits the new text content before starting the fade-in transition.
+    requestAnimationFrame(() => {
+      modal.classList.remove('text-swap');
+    });
 
     const cells = mExif.querySelectorAll('.exif-cell');
     cells.forEach((c, idx) => {
@@ -3225,30 +3249,35 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* =========================================================================
-   TOUCH SWIPE — swipe left/right inside the modal photo area to step
-   between photos (mobile). Listeners are passive (no preventDefault), so
-   vertical scrolling inside the modal keeps working — we only treat a
-   gesture as a "swipe" when the horizontal travel passes a threshold AND
-   clearly dominates the vertical travel. Multi-touch (pinch) is ignored.
-   The existing press-and-hold magnify on the image runs in parallel; it
-   ends on touchend before this handler fires, so its zoom-out finishes
-   before the swipe transition.
+   TOUCH SWIPE — swipe horizontally anywhere in the modal to step between
+   photos, EXCEPT when the gesture starts on the photo itself (that area
+   is owned by the press-and-hold magnify) or on the thumbnail strip
+   (which has its own horizontal scroll). Listeners are passive so vertical
+   scrolling inside the data panel keeps working — a gesture only counts as
+   a swipe when horizontal travel passes the threshold and clearly
+   dominates the vertical travel.
    ========================================================================= */
 (function modalSwipe(){
-  const wrap = document.querySelector('.modal-img-wrap');
-  if (!wrap) return;
+  if (!modal) return;
   let startX = 0, startY = 0, tracking = false;
   const THRESHOLD = 50;     // min horizontal travel in px to count as a swipe
   const H_DOMINANCE = 1.3;  // horizontal must beat vertical by this factor
 
-  wrap.addEventListener('touchstart', (e) => {
+  modal.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) { tracking = false; return; }
+    // Skip touches that originate on the photo or the thumbnail strip —
+    // those areas have their own gesture handling.
+    const tgt = e.target;
+    if (tgt && tgt.closest && (tgt.closest('.modal-img-frame') || tgt.closest('.modal-strip'))) {
+      tracking = false;
+      return;
+    }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     tracking = true;
   }, { passive: true });
 
-  wrap.addEventListener('touchend', (e) => {
+  modal.addEventListener('touchend', (e) => {
     if (!tracking) return;
     tracking = false;
     if (!modal.classList.contains('open')) return;
@@ -3261,7 +3290,7 @@ document.addEventListener('keydown', (e) => {
     }
   }, { passive: true });
 
-  wrap.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+  modal.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
 })();
 
 /* =========================================================================
