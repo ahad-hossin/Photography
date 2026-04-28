@@ -805,6 +805,10 @@ body.arranging.filters-active .arrange-notice { display: block; }
 @media (max-width: 760px) {
   .gallery { padding: 80px 8px 32px; }
   .grid { --cols: 2; --gap: 4px; }
+  /* Push the filter pills onto their own row below the "LIVE · SELECTED FRAMES" text.
+     order: 99 sends them to the end of the flex order; flex-basis: 100% makes them
+     consume a full row, which forces them onto the next line. */
+  .gallery-head .gh-center { flex-basis: 100%; order: 99; }
 }
 
 .frame {
