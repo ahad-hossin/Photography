@@ -1969,22 +1969,22 @@ function formatDate(day, month, year) {
 }
 
 /* =========================================================================
-   GITHUB AUTO-DISCOVERY CONFIG
+   AUTO-DISCOVERY CONFIG
    -------------------------------------------------------------------------
    Set `owner` and `repo` to your GitHub username and repository name.
-   On every page load, the gallery calls the GitHub Contents API to list
-   everything in `path` and rebuilds itself — so just uploading a new
-   photo (and optionally a .json sidecar) is enough; no code edits, no
-   photos.txt to maintain.
+   On every page load the gallery auto-discovers everything in `path` and
+   rebuilds itself — just upload a new photo (and optionally a .json
+   sidecar) and it appears. No code edits, no manifest to maintain.
 
-   Notes:
-   - The repo must be PUBLIC (private repos require an auth token).
-   - GitHub's anonymous API limit is 60 requests/hour PER VIEWER IP.
-     We make exactly 1 API call per page load to list the folder, then
-     load images and sidecars over normal HTTPS — so this is fine for
-     a portfolio with normal traffic.
-   - If the API call fails (rate limit, network, misconfig), we silently
-     fall back to /photos/photos.txt so the site still works.
+   Discovery order:
+   - PRIMARY: jsDelivr's data API. No rate limits, CDN-cached at the edge,
+     reflects new commits within ~10 minutes.
+   - FALLBACK: GitHub Contents API. Used only if jsDelivr is unreachable.
+     Anonymous limit is 60 requests/hour per IP — fine for normal visitors,
+     can rate-limit you during heavy testing.
+
+   Both methods require the repo to be PUBLIC. Image files are always
+   served from the jsDelivr CDN regardless of which discovery method ran.
    ========================================================================= */
 const GITHUB_CONFIG = {
   owner:  'ahad-hossin',     // GitHub username
@@ -1994,6 +1994,15 @@ const GITHUB_CONFIG = {
 };
 
 const _IMAGE_EXT_RE = /\.(webp|jpe?g|png|avif)$/i;
+
+// Build a jsDelivr CDN URL for any file in the photos folder.
+// jsDelivr is a free CDN that mirrors public GitHub repos with no bandwidth
+// limits and global edge caching — much faster and more reliable than serving
+// images directly from GitHub Pages.
+function cdnUrl(fname) {
+  const { owner, repo, branch, path } = GITHUB_CONFIG;
+  return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/${encodeURIComponent(fname)}`;
+}
 
 async function loadFromGitHub() {
   const { owner, repo, branch, path } = GITHUB_CONFIG;
@@ -2058,7 +2067,7 @@ async function loadFromGitHub() {
       coords: e.coords || '',
       date:  e.date  || autoDate,
       body:  e.body  || '',
-      img:   `${path}/${encodeURIComponent(fname)}`,
+      img:   cdnUrl(fname),
       exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
     };
     if (e.num) item.num = String(e.num);
@@ -2104,80 +2113,63 @@ async function loadFromGitHub() {
 }
 
 /* =========================================================================
-   LOCAL LOADER — photos.txt + per-photo JSON sidecars
+   JSDELIVR AUTO-DISCOVERY (PRIMARY)
    -------------------------------------------------------------------------
-   Reads /photos/photos.txt. Example:
+   Uses jsDelivr's data API to list every file in the repo at the given
+   ref. Compared to the GitHub Contents API this is:
+     - rate-limit-free (the GitHub API caps anonymous requests at 60/hour
+       per IP, which breaks the gallery for visitors and during testing)
+     - CDN-cached at the edge, so the request is fast worldwide
+     - the same source jsDelivr will serve the actual image files from,
+       so discovery and delivery agree on what exists
 
-       24_07_2024_yokitori.webp
-       24_07_2024_02_yokitori.webp
-       15_07_2024_yokitori.webp
-       ---
-       10_01_2024_yokitori.webp
-
-   One line per photo. Lines that are just `---` mark a "load more" cutoff
-   in the main (unfiltered) view. For each image filename, we try to load
-   photos/<basename>.json which may contain any subset of:
-
-       { "title": "...", "loc": "...", "coords": "...", "date": "...",
-         "body":  "...", "exif": { camera, lens, iso, f, s, focal } }
-
-   Missing sidecar → defaults derived from filename (if it matches
-   dd_mm_yyyy_yokitori.ext) or em-dashes otherwise. No errors shown to
-   visitors — fallbacks are silent.
+   Branch refs (e.g. @main) refresh on jsDelivr's side roughly every
+   10–15 minutes, so newly-pushed photos appear automatically without
+   any code changes — just push to GitHub.
    ========================================================================= */
-function parseDateString(s) {
-  if (!s) return null;
-  let m;
-  if ((m = s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/))) {
-    const monMap = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
-    const mon = monMap[m[2].slice(0,3).toLowerCase()];
-    if (!mon) return null;
-    return { day: +m[1], month: mon, year: +m[3], seq: 0 };
+async function loadFromJsDelivr() {
+  const { owner, repo, branch, path } = GITHUB_CONFIG;
+  if (!owner || owner === 'YOUR_GITHUB_USERNAME' || !repo || repo === 'YOUR_REPO_NAME') {
+    throw new Error('GITHUB_CONFIG not set — edit owner/repo at top of script');
   }
-  if ((m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))) {
-    return { day: +m[3], month: +m[2], year: +m[1], seq: 0 };
-  }
-  if ((m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/))) {
-    return { day: +m[1], month: +m[2], year: +m[3], seq: 0 };
-  }
-  return null;
-}
 
-function parsePhotosTxt(text) {
-  // Just pull filenames. --- and comments are tolerated but ignored —
-  // ordering & cutoffs are both automatic now.
-  const lines = text.split(/\r?\n/);
-  const filenames = [];
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-    if (line.startsWith('#')) continue;
-    if (/^-{3,}$/.test(line)) continue;
-    filenames.push(line);
+  // Flat structure returns every file with its full path, which is easier
+  // to filter than walking a nested directory tree.
+  const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}@${encodeURIComponent(branch)}?structure=flat`;
+  const res = await fetch(apiUrl, { cache: 'no-cache' });
+  if (!res.ok) {
+    throw new Error(`jsDelivr API ${res.status} ${res.statusText} — check owner/repo/branch`);
   }
-  return { filenames };
-}
+  const data = await res.json();
+  if (!data || !Array.isArray(data.files)) throw new Error('Unexpected jsDelivr API response');
 
-async function fetchSidecar(basename) {
-  const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
-  const bust = Math.floor(Date.now() / 1000 / 60);
-  try {
-    const r = await fetch(`photos/${encodeURIComponent(jsonName)}?v=${bust}`, { cache: 'no-cache' });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch (err) {
-    return null;
-  }
-}
+  // Flat-mode paths look like "/photos/foo.webp". Match images directly under
+  // the configured photos folder (no nested subdirs) with a supported extension.
+  const prefix = `/${path}/`;
+  const filenames = data.files
+    .map(f => f.name)
+    .filter(name => name.startsWith(prefix))
+    .map(name => name.slice(prefix.length))
+    .filter(name => !name.includes('/'))
+    .filter(name => _IMAGE_EXT_RE.test(name));
 
-async function loadFromLocalManifest(txtPath = 'photos/photos.txt') {
-  const bust = Math.floor(Date.now() / 1000 / 60);
-  const r = await fetch(`${txtPath}?v=${bust}`, { cache: 'no-cache' });
-  if (!r.ok) throw new Error(`photos.txt fetch failed (HTTP ${r.status})`);
-  const text = await r.text();
-  const { filenames } = parsePhotosTxt(text);
+  if (!filenames.length) throw new Error(`No images found in ${owner}/${repo}/${path}`);
 
-  if (!filenames.length) throw new Error('photos.txt contains no image filenames');
+  // Sort newest-first by date encoded in filename (dd_mm_yyyy_yokitori.ext);
+  // unparseable names fall to the end alphabetically.
+  filenames.sort((a, b) => {
+    const pa = parsePhotoFilename(a);
+    const pb = parsePhotoFilename(b);
+    if (pa && pb) {
+      const da = pa.year * 10000 + pa.month * 100 + pa.day;
+      const db = pb.year * 10000 + pb.month * 100 + pb.day;
+      if (da !== db) return db - da;
+      return (pa.seq || 0) - (pb.seq || 0);
+    }
+    if (pa) return -1;
+    if (pb) return 1;
+    return a.localeCompare(b);
+  });
 
   const sidecars = await Promise.all(filenames.map(fetchSidecar));
 
@@ -2200,11 +2192,11 @@ async function loadFromLocalManifest(txtPath = 'photos/photos.txt') {
       coords: e.coords || '',
       date:  e.date  || autoDate,
       body:  e.body  || '',
-      img:   `photos/${encodeURIComponent(fname)}`,
+      img:   cdnUrl(fname),
       exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
     };
     if (e.num) item.num = String(e.num);
-    if (e.orientation) item.orientation = e.orientation;  // 'tall' | 'wide' | 'square'
+    if (e.orientation) item.orientation = e.orientation;
     return item;
   });
 
@@ -2213,15 +2205,13 @@ async function loadFromLocalManifest(txtPath = 'photos/photos.txt') {
   activeYear = 'all';
   activeMonth = 'all';
   visibleByView = {};
-  window.__yokitoriOrderMap = null;  // re-shuffle when photos change
+  window.__yokitoriOrderMap = null;
 
   renderYearPills();
   renderMonthPills();
   renderGrid();
 
-  // Backfill orientation for any photo whose sidecar didn't specify it:
-  // load the image, measure natural size, and inject orientation. Once all
-  // are filled, re-shuffle so the vertical-spread pass can do its job.
+  // Backfill orientation for photos missing an explicit one in their sidecar.
   const needsOrient = PHOTOS.filter(p => !p.orientation);
   if (needsOrient.length) {
     let remaining = needsOrient.length;
@@ -2232,18 +2222,54 @@ async function loadFromLocalManifest(txtPath = 'photos/photos.txt') {
         p.orientation = r < 0.95 ? 'tall' : (r > 1.05 ? 'wide' : 'square');
         remaining--;
         if (remaining === 0) {
-          // Done backfilling — reshuffle with full orientation data
           window.__yokitoriOrderMap = null;
           renderGrid();
         }
       };
-      im.onerror = () => { remaining--; if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); } };
+      im.onerror = () => {
+        remaining--;
+        if (remaining === 0) { window.__yokitoriOrderMap = null; renderGrid(); }
+      };
       im.src = p.img;
     });
   }
-  return list.length;
+
+  return PHOTOS.length;
 }
-window.__yokitoriLoadLocal = loadFromLocalManifest;
+
+/* =========================================================================
+   SHARED HELPERS — used by both auto-discovery loaders above
+   ========================================================================= */
+function parseDateString(s) {
+  if (!s) return null;
+  let m;
+  if ((m = s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/))) {
+    const monMap = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+    const mon = monMap[m[2].slice(0,3).toLowerCase()];
+    if (!mon) return null;
+    return { day: +m[1], month: mon, year: +m[3], seq: 0 };
+  }
+  if ((m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))) {
+    return { day: +m[3], month: +m[2], year: +m[1], seq: 0 };
+  }
+  if ((m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/))) {
+    return { day: +m[1], month: +m[2], year: +m[3], seq: 0 };
+  }
+  return null;
+}
+
+async function fetchSidecar(basename) {
+  const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
+  // Sidecar JSONs are served via jsDelivr too. They 404 silently if the
+  // photo has no sidecar — that's expected, not an error.
+  try {
+    const r = await fetch(cdnUrl(jsonName), { cache: 'no-cache' });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (err) {
+    return null;
+  }
+}
 
 /* =========================================================================
    BOOT SEQUENCE (non-blocking, dismissible on tap)
@@ -2353,9 +2379,8 @@ window.__yokitoriLoadLocal = loadFromLocalManifest;
      accent        - any CSS color (hex, rgb, named)
      imageFilter   - 0.0 to 2.0    (contrast/saturation boost)
 
-   Per-photo "load more" cutoffs are set by placing `---` lines in
-   photos/photos.txt — NOT here. The `cutoffs` below is just an empty
-   default; the loader fills it from photos.txt at boot.
+   Per-photo "load more" cutoffs are now auto-generated (one every 10
+   photos in the visible list); the `cutoffs` below is unused legacy.
    ========================================================================= */
 const TWEAK_DEFAULTS = {
   "columns": 3,
@@ -2409,7 +2434,7 @@ function currentViewKey() {
 
 function getCutoffs(viewKey) {
   // Auto-generated: one cutoff every 10 photos in the currently visible list.
-  // Ignores any cutoffs in TWEAKS or photos.txt — those are legacy.
+  // Ignores any cutoffs in TWEAKS — those are legacy.
   const listLen = currentList().length;
   if (listLen <= 10) return [];
   const count = Math.floor((listLen - 1) / 10);
@@ -2432,9 +2457,9 @@ function setCutoffs(viewKey, arr) {
 }
 
 function persistCutoffs() {
-  // No-op: cutoffs are now defined by `---` lines in photos/photos.txt.
+  // No-op: cutoffs are auto-generated from the visible list length.
   // Runtime changes (e.g. if someone calls setCutoffs in devtools) are
-  // ephemeral — they won't survive a reload. Edit photos.txt to persist.
+  // ephemeral — they won't survive a reload.
 }
 
 // "Shown by default" count for a view: first cutoff, or full length if none.
@@ -2961,22 +2986,29 @@ renderYearPills();
 renderMonthPills();
 renderGrid();
 
-// Auto-discover photos via the GitHub API. If that fails for any reason
-// (rate limit, bad config, offline), fall back to /photos/photos.txt so
-// the site still loads.
+// Auto-discover photos. The site re-runs this on every load, so newly-pushed
+// images appear without any code changes. Two loaders are tried in order:
+//
+//   1. jsDelivr API + jsDelivr CDN (PRIMARY) — no rate limits, edge-cached
+//      worldwide, refreshes within ~10 minutes of a push to GitHub.
+//   2. GitHub Contents API (FALLBACK) — only used if jsDelivr is unreachable.
+//      Subject to a 60 req/hour-per-IP anonymous rate limit.
+//
+// Both discover photos automatically — just push images to /photos/ and
+// they appear. No manifest file to maintain.
 (async () => {
+  try {
+    const n = await loadFromJsDelivr();
+    console.log(`[yokitori] auto-discovered ${n} photos via jsDelivr`);
+    return;
+  } catch (err) {
+    console.warn('[yokitori] jsDelivr discovery failed:', err.message);
+  }
   try {
     const n = await loadFromGitHub();
     console.log(`[yokitori] auto-discovered ${n} photos via GitHub API`);
-    return;
   } catch (err) {
     console.warn('[yokitori] GitHub auto-discovery failed:', err.message);
-  }
-  try {
-    const n = await loadFromLocalManifest();
-    console.log(`[yokitori] fell back to photos/photos.txt — loaded ${n || 'photos'}`);
-  } catch (err) {
-    console.warn('[yokitori] could not load photos.txt either:', err.message);
   }
 })();
 
