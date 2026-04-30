@@ -853,6 +853,14 @@ body.arranging.filters-active .arrange-notice { display: block; }
   object-fit: cover;
   filter: brightness(0.92) contrast(1.02) saturate(0.92) blur(0);
   transition: transform 1.1s var(--ease), filter 0.55s var(--ease);
+  /* Kill the iOS/Android long-press "Save Image / Copy / Share" callout and
+     the desktop drag-to-save gesture. pointer-events:none routes the tap to
+     the parent .frame so its click handler (open modal) keeps working. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 .frame:hover img {
   transform: scale(1.04);
