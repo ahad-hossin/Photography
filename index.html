@@ -804,11 +804,20 @@ body.arranging.filters-active .arrange-notice { display: block; }
 }
 @media (max-width: 760px) {
   .gallery { padding: 80px 8px 32px; }
-  .grid { --cols: 2; --gap: 4px; }
+  /* !important here is intentional: the gallery JS may write --cols / --gap
+     as inline styles when the user customizes the desktop layout via TWEAKS,
+     and inline styles otherwise beat media queries. We force the mobile
+     count so the layout never collapses into unreadable 3+ columns on
+     phones, regardless of customization. */
+  .grid { --cols: 2 !important; --gap: 4px !important; }
   /* Push the filter pills onto their own row below the "LIVE · SELECTED FRAMES" text.
      order: 99 sends them to the end of the flex order; flex-basis: 100% makes them
      consume a full row, which forces them onto the next line. */
   .gallery-head .gh-center { flex-basis: 100%; order: 99; }
+}
+@media (max-width: 420px) {
+  .gallery { padding: 72px 6px 28px; }
+  .grid { --gap: 3px !important; }
 }
 
 .frame {
@@ -2596,8 +2605,20 @@ function applyTweakStyles() {
   const root = document.documentElement;
   root.style.setProperty('--accent-custom', TWEAKS.accent);
   root.style.setProperty('--rec', TWEAKS.accent);
-  grid.style.setProperty('--cols', TWEAKS.columns);
-  grid.style.setProperty('--gap', TWEAKS.gap + 'px');
+  // Only set --cols / --gap inline when the user has customized away from
+  // the defaults. Inline styles beat CSS media queries, so writing the
+  // defaults inline would silently break the responsive breakpoints below
+  // and leave mobile stuck on a 3-column desktop layout.
+  if (TWEAKS.columns !== TWEAK_DEFAULTS.columns) {
+    grid.style.setProperty('--cols', TWEAKS.columns);
+  } else {
+    grid.style.removeProperty('--cols');
+  }
+  if (TWEAKS.gap !== TWEAK_DEFAULTS.gap) {
+    grid.style.setProperty('--gap', TWEAKS.gap + 'px');
+  } else {
+    grid.style.removeProperty('--gap');
+  }
   document.body.classList.toggle('no-meta',       !TWEAKS.showMeta);
   document.body.classList.toggle('no-frame-num',  !TWEAKS.showFrameNum);
   document.body.classList.toggle('no-cursor-dot', !TWEAKS.showCursorDot);
