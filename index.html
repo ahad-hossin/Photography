@@ -1422,6 +1422,36 @@ body.arranging.filters-active .arrange-notice { display: block; }
   letter-spacing: 0.02em;
 }
 
+/* Copyright block — sits at the very bottom of the modal data column,
+   after EXIF. Wrapped with .exif inside .md-bottom so the modal-data
+   flex layout (justify-content: space-between) still has exactly two
+   children: title group on top, this group on bottom. */
+.md-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.md-copyright {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-family: var(--f-mono);
+  line-height: 1.7;
+}
+.md-copyright .mc-mark {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.md-copyright .mc-fine {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dimmer);
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
 /* Close + label + nav */
 .modal-close {
   position: absolute;
@@ -1552,7 +1582,7 @@ body.arranging.filters-active .arrange-notice { display: block; }
     display: flex;
     flex-direction: column;
     grid-template-columns: none;
-    padding: 72px 20px 28px;
+    padding: 72px 20px 100px;
     gap: 24px;
     overflow-y: auto;
     scrollbar-width: none;        /* Firefox */
@@ -1618,6 +1648,7 @@ body.arranging.filters-active .arrange-notice { display: block; }
   .exif { grid-template-columns: 1fr 1fr; gap: 16px 18px; padding-top: 18px; }
   .exif-cell .v { font-size: 13px; }
   .exif-cell .k { font-size: 10px; letter-spacing: 0.16em; }
+}
 }
 
 /* =========================================================================
@@ -1885,7 +1916,13 @@ body.arranging.filters-active .arrange-notice { display: block; }
         <div class="md-coords" id="mCoords" hidden></div>
         <p class="md-body" id="mBody">—</p>
       </div>
-      <div class="exif" id="mExif"></div>
+      <div class="md-bottom">
+        <div class="exif" id="mExif"></div>
+        <div class="md-copyright">
+          <div class="mc-mark">© <span id="mcYear">2026</span> · Ahad Hossin · All frames reserved</div>
+          <div class="mc-fine">Photograph by Yokitori · Dhaka, Bangladesh. Reproduction, redistribution, or commercial use of this image without written permission from the artist is prohibited.</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3427,6 +3464,10 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     const d  = String(tok.getDate()).padStart(2, '0');
     elD.textContent = `${y} · ${mo} · ${d}`;
   }
+
+  // Modal copyright year — auto-updates every January 1st.
+  const elY = document.getElementById('mcYear');
+  if (elY) elY.textContent = new Date().getFullYear();
 
   function render() {
     const sec = Math.floor((performance.now() - startedAt) / 1000);
