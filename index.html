@@ -1948,25 +1948,6 @@ let YEARS = computeYears();
 /* =========================================================================
    FILENAME HELPERS — used by both the gallery and the local loader
    ========================================================================= */
-const MONTH_BY_NUM = { '01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec' };
-
-// Pull filename → { day, month, year, seq } or null.
-// Accepts: dd_mm_yyyy_yokitori.webp, dd_mm_yyyy_NN_yokitori.webp,
-//          dd_mm_yyyy_yokitori_a.webp. Case-insensitive. Any image ext.
-function parsePhotoFilename(name) {
-  const m = name.match(/^(\d{2})[_-](\d{2})[_-](\d{4})(?:[_-](\d{1,3}))?[_-]yokitori(?:[_-]([a-z]))?\.(webp|jpg|jpeg|png|avif)$/i);
-  if (!m) return null;
-  const [, dd, mm, yyyy, seqNum, seqLetter] = m;
-  const day = parseInt(dd, 10), mon = parseInt(mm, 10), yr = parseInt(yyyy, 10);
-  if (day < 1 || day > 31 || mon < 1 || mon > 12) return null;
-  const seq = seqNum ? parseInt(seqNum, 10) : (seqLetter ? (seqLetter.toLowerCase().charCodeAt(0) - 96) : 0);
-  return { day, month: mon, year: yr, seq };
-}
-
-function formatDate(day, month, year) {
-  const mname = MONTH_BY_NUM[String(month).padStart(2,'0')];
-  return `${String(day).padStart(2,'0')} ${mname} ${year}`;
-}
 
 /* =========================================================================
    AUTO-DISCOVERY CONFIG
@@ -2028,22 +2009,8 @@ async function loadFromGitHub() {
 
   if (!filenames.length) throw new Error(`No images found in ${owner}/${repo}/${path}`);
 
-  // Sort newest-first by the date encoded in the filename
-  // (dd_mm_yyyy_yokitori.ext). Files that don't match that pattern fall
-  // to the end in alphabetical order — so legacy/oddly-named photos still show.
-  filenames.sort((a, b) => {
-    const pa = parsePhotoFilename(a);
-    const pb = parsePhotoFilename(b);
-    if (pa && pb) {
-      const da = pa.year * 10000 + pa.month * 100 + pa.day;
-      const db = pb.year * 10000 + pb.month * 100 + pb.day;
-      if (da !== db) return db - da;             // newer date first
-      return (pa.seq || 0) - (pb.seq || 0);      // same day → seq ascending
-    }
-    if (pa) return -1;
-    if (pb) return 1;
-    return a.localeCompare(b);
-  });
+  // Filenames can be anything — sort alphabetically.
+  filenames.sort((a, b) => a.localeCompare(b));
 
   // Sidecar JSONs are loaded by relative path — same origin, no API hit.
   const sidecars = await Promise.all(filenames.map(fetchSidecar));
@@ -2051,21 +2018,13 @@ async function loadFromGitHub() {
   const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
   const list = filenames.map((fname, i) => {
     const e = sidecars[i] || {};
-    const parsedFromName = parsePhotoFilename(fname);
-    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
-    const parsed = parsedFromName || parsedFromDate;
-
-    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
-    const autoTitle = parsedFromName
-      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
-      : (e.date ? `Frame ${e.date}` : 'Untitled');
 
     const item = {
       key:   'local',
-      title: e.title || autoTitle,
+      title: e.title || 'Untitled',
       loc:   e.loc   || '',
       coords: e.coords || '',
-      date:  e.date  || autoDate,
+      date:  e.date  || '',
       body:  e.body  || '',
       img:   cdnUrl(fname),
       exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
@@ -2155,42 +2114,21 @@ async function loadFromJsDelivr() {
 
   if (!filenames.length) throw new Error(`No images found in ${owner}/${repo}/${path}`);
 
-  // Sort newest-first by date encoded in filename (dd_mm_yyyy_yokitori.ext);
-  // unparseable names fall to the end alphabetically.
-  filenames.sort((a, b) => {
-    const pa = parsePhotoFilename(a);
-    const pb = parsePhotoFilename(b);
-    if (pa && pb) {
-      const da = pa.year * 10000 + pa.month * 100 + pa.day;
-      const db = pb.year * 10000 + pb.month * 100 + pb.day;
-      if (da !== db) return db - da;
-      return (pa.seq || 0) - (pb.seq || 0);
-    }
-    if (pa) return -1;
-    if (pb) return 1;
-    return a.localeCompare(b);
-  });
+  // Filenames can be anything — sort alphabetically.
+  filenames.sort((a, b) => a.localeCompare(b));
 
   const sidecars = await Promise.all(filenames.map(fetchSidecar));
 
   const DEFAULT_EXIF = { camera: '—', lens: '—', iso: '—', f: '—', s: '—', focal: '—' };
   const list = filenames.map((fname, i) => {
     const e = sidecars[i] || {};
-    const parsedFromName = parsePhotoFilename(fname);
-    const parsedFromDate = parsedFromName ? null : parseDateString(e.date);
-    const parsed = parsedFromName || parsedFromDate;
-
-    const autoDate = parsed ? formatDate(parsed.day, parsed.month, parsed.year) : '';
-    const autoTitle = parsedFromName
-      ? `Frame ${autoDate}` + (parsedFromName.seq ? ` · ${String(parsedFromName.seq).padStart(2,'0')}` : '')
-      : (e.date ? `Frame ${e.date}` : 'Untitled');
 
     const item = {
       key:   'local',
-      title: e.title || autoTitle,
+      title: e.title || 'Untitled',
       loc:   e.loc   || '',
       coords: e.coords || '',
-      date:  e.date  || autoDate,
+      date:  e.date  || '',
       body:  e.body  || '',
       img:   cdnUrl(fname),
       exif:  { ...DEFAULT_EXIF, ...(e.exif || {}) },
@@ -2240,23 +2178,6 @@ async function loadFromJsDelivr() {
 /* =========================================================================
    SHARED HELPERS — used by both auto-discovery loaders above
    ========================================================================= */
-function parseDateString(s) {
-  if (!s) return null;
-  let m;
-  if ((m = s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/))) {
-    const monMap = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
-    const mon = monMap[m[2].slice(0,3).toLowerCase()];
-    if (!mon) return null;
-    return { day: +m[1], month: mon, year: +m[3], seq: 0 };
-  }
-  if ((m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/))) {
-    return { day: +m[3], month: +m[2], year: +m[1], seq: 0 };
-  }
-  if ((m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/))) {
-    return { day: +m[1], month: +m[2], year: +m[3], seq: 0 };
-  }
-  return null;
-}
 
 async function fetchSidecar(basename) {
   const jsonName = basename.replace(/\.(webp|jpg|jpeg|png|avif)$/i, '.json');
