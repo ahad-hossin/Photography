@@ -1587,6 +1587,18 @@ body.arranging.filters-active .arrange-notice { display: block; }
     overflow-y: auto;
     scrollbar-width: none;        /* Firefox */
     -ms-overflow-style: none;     /* IE/Edge legacy */
+    /* Transition padding-bottom so it grows in lockstep with the image
+       wrap shrinking — the two together keep total scrollHeight constant
+       across the animation, which is what stops the browser from clamping
+       the user's scrollTop and bouncing them back to the top. */
+    transition: padding-bottom 0.35s var(--ease);
+  }
+  /* When the user scrolls past the threshold, the image wrap loses ~38vh
+     of layout height. We add that same 38vh to the inner's bottom padding
+     so the page's scrollHeight is unchanged — without this, scrolling
+     while shrunk would flicker the image's size around the threshold. */
+  .modal-inner.shrunk {
+    padding-bottom: calc(100px + 38vh);
   }
   .modal-inner::-webkit-scrollbar { display: none; } /* Chrome/Safari */
   .modal-data { scrollbar-width: none; -ms-overflow-style: none; }
@@ -1594,7 +1606,11 @@ body.arranging.filters-active .arrange-notice { display: block; }
   /* Image wrap: size to content, no forced aspect ratio. The image inside
      displays at its natural aspect, capped to 60vh so it never dominates
      the viewport. Overrides the JS frame-sizing which assumes a fixed
-     container — on mobile we just let the image drive its own box. */
+     container — on mobile we just let the image drive its own box.
+     position:sticky pins it to the top while the user scrolls the data
+     below; combined with the .shrunk state set by JS on scroll, the image
+     smoothly compresses to ~22vh so portrait photos stop hogging the
+     viewport once the reader is engaging with the details. */
   .modal-img-wrap {
     height: auto;
     aspect-ratio: unset;
@@ -1602,21 +1618,62 @@ body.arranging.filters-active .arrange-notice { display: block; }
     flex-shrink: 0;
     display: block;
     min-width: 0;
+    position: sticky;
+    top: 14px;
+    z-index: 4;
+    background: var(--bg);
+    transition: max-height 0.35s var(--ease);
   }
+  /* Top mask — when the user has scrolled enough to shrink the image, this
+     bar fades in and covers the strip of viewport above the sticky image
+     where modal-data content (title, kicker, body) would otherwise scroll
+     into view and overlap the close/label buttons. Sized to clear the
+     sticky pin point (modal-inner has 72px padding-top + sticky top:14px =
+     86px total). */
+  .modal-top-mask {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 86px;
+    background: var(--bg);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s var(--ease);
+  }
+  /* Reveal mask once shrink kicks in. ~ selector targets the mask element
+     that follows .modal-inner.shrunk in the DOM. */
+  .modal-inner.shrunk ~ .modal-top-mask { opacity: 1; }
+  /* Lift the close button + N° label above the mask (z:2) and the sticky
+     wrap (z:4) so they remain tappable while the user scrolls. */
+  .modal-close,
+  .modal-label { z-index: 5; }
   .modal-img-frame {
     width: 100% !important;
     height: auto !important;
     max-height: 60vh;
     margin: 0 auto;
+    transition: max-height 0.35s var(--ease);
   }
   .modal-img-wrap img {
     width: 100%;
     height: auto;
     max-height: 60vh;
     object-fit: contain;
+    transition: max-height 0.35s var(--ease);
   }
+  /* Shrunk state — toggled by JS once the user scrolls past a small
+     threshold. Keeps the photo recognizable as a thumbnail while freeing
+     up roughly 38vh for the reading column. */
+  .modal-inner.shrunk .modal-img-wrap,
+  .modal-inner.shrunk .modal-img-frame,
+  .modal-inner.shrunk .modal-img-wrap img {
+    max-height: 22vh;
+  }
+  /* Modal-data inherits overflow-y:auto from desktop styles which would
+     turn it into its own scroll container and break the sticky wrap.
+     Force it visible so modal-inner is the single scrolling element. */
   /* Data column: allow text to shrink/wrap inside the flex parent */
-  .modal-data { padding: 0; min-width: 0; }
+  .modal-data { padding: 0; min-width: 0; overflow-y: visible; }
   /* Title: much smaller on mobile — 4rem desktop is too big for phones */
   .md-title {
     font-size: clamp(1.7rem, 7vw, 2.3rem);
@@ -1925,6 +1982,14 @@ body.arranging.filters-active .arrange-notice { display: block; }
       </div>
     </div>
   </div>
+
+  <!-- Mobile sticky-shrink mask: covers the area above the sticky image
+       so titles/EXIF scrolling up disappear cleanly behind it. Sibling of
+       .modal-inner so it lives in the modal's own stacking context (avoids
+       the painful stacking-context issues of an ::before pseudo on a
+       sticky parent). Hidden by default; CSS reveals it only when the
+       inner has the .shrunk class. -->
+  <div class="modal-top-mask" aria-hidden="true"></div>
 
   <div class="kbd-hint">
     <span class="kbd">←</span><span class="kbd">→</span>
@@ -3248,6 +3313,14 @@ function setThumbActive(i){
 function renderPhoto(i) {
   currentIdx = i;
   const p = PHOTOS[i];
+  // Each new photo starts at the top with the image at full size — reset
+  // the mobile sticky-shrink state so navigating through the strip doesn't
+  // leave the next photo trapped in shrunk mode.
+  const inner = document.querySelector('.modal-inner');
+  if (inner) {
+    inner.scrollTop = 0;
+    inner.classList.remove('shrunk');
+  }
   // Fade image out during swap
   mImg.classList.remove('shown');
   // Trigger the text-swap transition: all text fields (label, kicker, title,
@@ -3431,6 +3504,27 @@ document.addEventListener('keydown', (e) => {
   }, { passive: true });
 
   modal.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+})();
+
+/* =========================================================================
+   MOBILE: SHRINK-ON-SCROLL HEADER
+   On mobile, portrait photos eat ~60vh and leave very little room for the
+   title/body/exif/copyright. We make the image wrap a sticky header that
+   smoothly compresses to ~22vh once the user starts scrolling, freeing
+   up roughly a third of the viewport for the data column. Hysteresis
+   (shrink at 50px down, restore at top) prevents the image from flickering
+   between sizes around the threshold.
+   ========================================================================= */
+(function modalShrinkOnScroll(){
+  const inner = document.querySelector('.modal-inner');
+  if (!inner) return;
+  const SHRINK_AT = 50;
+  const UNSHRINK_AT = 4;
+  inner.addEventListener('scroll', () => {
+    const t = inner.scrollTop;
+    if (t > SHRINK_AT)      inner.classList.add('shrunk');
+    else if (t < UNSHRINK_AT) inner.classList.remove('shrunk');
+  }, { passive: true });
 })();
 
 /* =========================================================================
