@@ -3009,16 +3009,17 @@ renderYearPills();
 renderMonthPills();
 renderGrid();
 
-// Auto-discover photos. The site re-runs this on every load, so newly-pushed
-// images appear without any code changes. Two loaders are tried in order:
+// Auto-discover photos. Discovery order:
 //
-//   1. jsDelivr API + jsDelivr CDN (PRIMARY) — no rate limits, edge-cached
-//      worldwide, refreshes within ~10 minutes of a push to GitHub.
-//   2. GitHub Contents API (FALLBACK) — only used if jsDelivr is unreachable.
-//      Subject to a 60 req/hour-per-IP anonymous rate limit.
+//   1. GitHub Contents API (PRIMARY) — always real-time, reflects pushes and
+//      deletes immediately. Anonymous limit is 60 req/hour per IP which is
+//      fine for normal visitors.
+//   2. jsDelivr data API (FALLBACK) — used only if GitHub API is unreachable.
+//      Cached at the edge; can lag 10-15 min behind GitHub, so deleted files
+//      may still appear briefly. Images are always served from jsDelivr CDN
+//      regardless of which discovery path ran.
 //
-// Both discover photos automatically — just push images to /photos/ and
-// they appear. No manifest file to maintain.
+// Push or delete photos on GitHub — the gallery updates on the next page load.
 (async () => {
   // Show a loading indicator in the gallery while discovery runs.
   const gridEl = document.getElementById('grid');
@@ -3028,19 +3029,21 @@ renderGrid();
 
   let discovered = 0;
 
-  try {
-    discovered = await loadFromJsDelivr();
-    console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr`);
-    return;
-  } catch (err) {
-    console.warn('[yokitori] jsDelivr discovery failed:', err.message);
-  }
+  // PRIMARY: GitHub Contents API — always shows the current state of the repo.
   try {
     discovered = await loadFromGitHub();
     console.log(`[yokitori] auto-discovered ${discovered} photos via GitHub API`);
+    return;
   } catch (err) {
-    console.warn('[yokitori] GitHub auto-discovery failed:', err.message);
-    // Show a helpful error in the gallery so it's visible without opening DevTools.
+    console.warn('[yokitori] GitHub API discovery failed:', err.message);
+  }
+
+  // FALLBACK: jsDelivr data API — may lag behind deletes/adds by ~15 min.
+  try {
+    discovered = await loadFromJsDelivr();
+    console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr (may be cached)`);
+  } catch (err) {
+    console.warn('[yokitori] jsDelivr discovery also failed:', err.message);
     if (gridEl && !PHOTOS.length) {
       gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:12px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">
         COULD NOT LOAD FRAMES — check that the GitHub repo is public,<br>
