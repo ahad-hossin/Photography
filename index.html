@@ -2005,21 +2005,29 @@ function cdnUrl(fname) {
 }
 
 async function loadFromGitHub() {
-  const { owner, repo, branch, path } = GITHUB_CONFIG;
+  const { owner, repo, path } = GITHUB_CONFIG;
   if (!owner || owner === 'YOUR_GITHUB_USERNAME' || !repo || repo === 'YOUR_REPO_NAME') {
     throw new Error('GITHUB_CONFIG not set — edit owner/repo at top of script');
   }
 
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
-  const res = await fetch(apiUrl, {
-    headers: { 'Accept': 'application/vnd.github.v3+json' },
-    cache:   'no-cache',
-  });
-  if (!res.ok) {
-    throw new Error(`GitHub API ${res.status} ${res.statusText} — check owner/repo/branch`);
+  // Try configured branch first, then the other common default branch name.
+  const branchesToTry = [GITHUB_CONFIG.branch, GITHUB_CONFIG.branch === 'main' ? 'master' : 'main'];
+  let entries = null;
+
+  for (const branch of branchesToTry) {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
+    const res = await fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        entries = json;
+        GITHUB_CONFIG.branch = branch; // lock in the correct branch for cdnUrl()
+        break;
+      }
+    }
   }
-  const entries = await res.json();
-  if (!Array.isArray(entries)) throw new Error('Unexpected GitHub API response');
+
+  if (!Array.isArray(entries)) throw new Error('GitHub API: no valid response for any branch — check owner/repo/branch/visibility');
 
   // Image files only. Folders, READMEs, and the .json sidecars are filtered out.
   const filenames = entries
@@ -2128,20 +2136,35 @@ async function loadFromGitHub() {
    any code changes — just push to GitHub.
    ========================================================================= */
 async function loadFromJsDelivr() {
-  const { owner, repo, branch, path } = GITHUB_CONFIG;
+  const { owner, repo, path } = GITHUB_CONFIG;
   if (!owner || owner === 'YOUR_GITHUB_USERNAME' || !repo || repo === 'YOUR_REPO_NAME') {
     throw new Error('GITHUB_CONFIG not set — edit owner/repo at top of script');
   }
 
-  // Flat structure returns every file with its full path, which is easier
-  // to filter than walking a nested directory tree.
-  const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}@${encodeURIComponent(branch)}?structure=flat`;
-  const res = await fetch(apiUrl, { cache: 'no-cache' });
-  if (!res.ok) {
-    throw new Error(`jsDelivr API ${res.status} ${res.statusText} — check owner/repo/branch`);
+  // Try the configured branch first, then fall back to 'master' if 'main' fails
+  // (jsDelivr needs the exact branch name that exists in the repo).
+  const branchesToTry = [GITHUB_CONFIG.branch, GITHUB_CONFIG.branch === 'main' ? 'master' : 'main'];
+  let data = null;
+  let usedBranch = GITHUB_CONFIG.branch;
+
+  for (const branch of branchesToTry) {
+    const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}@${encodeURIComponent(branch)}?structure=flat`;
+    const res = await fetch(apiUrl);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && Array.isArray(json.files) && json.files.length > 0) {
+        data = json;
+        usedBranch = branch;
+        // Update config so cdnUrl() uses the correct branch for image delivery
+        GITHUB_CONFIG.branch = branch;
+        break;
+      }
+    }
   }
-  const data = await res.json();
-  if (!data || !Array.isArray(data.files)) throw new Error('Unexpected jsDelivr API response');
+
+  if (!data || !Array.isArray(data.files)) {
+    throw new Error(`jsDelivr API returned no data for ${owner}/${repo} — check owner/repo/branch`);
+  }
 
   // Flat-mode paths look like "/photos/foo.webp". Match images directly under
   // the configured photos folder (no nested subdirs) with a supported extension.
@@ -2997,18 +3020,34 @@ renderGrid();
 // Both discover photos automatically — just push images to /photos/ and
 // they appear. No manifest file to maintain.
 (async () => {
+  // Show a loading indicator in the gallery while discovery runs.
+  const gridEl = document.getElementById('grid');
+  if (gridEl && !PHOTOS.length) {
+    gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:13px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">LOADING FRAMES…</p>`;
+  }
+
+  let discovered = 0;
+
   try {
-    const n = await loadFromJsDelivr();
-    console.log(`[yokitori] auto-discovered ${n} photos via jsDelivr`);
+    discovered = await loadFromJsDelivr();
+    console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr`);
     return;
   } catch (err) {
     console.warn('[yokitori] jsDelivr discovery failed:', err.message);
   }
   try {
-    const n = await loadFromGitHub();
-    console.log(`[yokitori] auto-discovered ${n} photos via GitHub API`);
+    discovered = await loadFromGitHub();
+    console.log(`[yokitori] auto-discovered ${discovered} photos via GitHub API`);
   } catch (err) {
     console.warn('[yokitori] GitHub auto-discovery failed:', err.message);
+    // Show a helpful error in the gallery so it's visible without opening DevTools.
+    if (gridEl && !PHOTOS.length) {
+      gridEl.innerHTML = `<p style="color:var(--ink-dim);font-size:12px;letter-spacing:.14em;padding:40px 0;grid-column:1/-1;text-align:center;">
+        COULD NOT LOAD FRAMES — check that the GitHub repo is public,<br>
+        the branch name is correct, and the photos/ folder exists.<br>
+        <span style="color:var(--ink-dimmer);font-size:11px;">${err.message}</span>
+      </p>`;
+    }
   }
 })();
 
