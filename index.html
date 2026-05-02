@@ -3248,6 +3248,20 @@ function setThumbActive(i){
 
 function renderPhoto(i) {
   currentIdx = i;
+  // Keep the URL hash in sync with the photo currently being viewed, so
+  // copying the URL at any moment yields a shareable link to THIS photo.
+  // We use replaceState (not pushState) — the back button should always
+  // close the modal in one tap, no matter how many photos the user has
+  // browsed through within this session.
+  if (modalHistoryPushed) {
+    const slug = photoSlug(PHOTOS[i]);
+    if (slug) {
+      const newUrl = '#' + slug;
+      if (location.hash !== newUrl) {
+        history.replaceState({ modal: true, slug }, '', newUrl);
+      }
+    }
+  }
   const p = PHOTOS[i];
   // Fade image out during swap
   mImg.classList.remove('shown');
@@ -3340,6 +3354,37 @@ function renderPhoto(i) {
   }, 150);
 }
 
+// =========================================================================
+// SHAREABLE LINKS — derive a URL slug from each photo's filename, so a
+// link like https://ahad-hossin.github.io/Photography/#Above_What_Holds_You
+// will deep-open the corresponding photo's details modal. The slug is
+// just the filename with the "_yokitori_Ahad_Hossin.<ext>" suffix removed
+// (case-insensitive). If the suffix isn't present, we fall back to the
+// bare filename without extension. Returns null if the photo has no img.
+// =========================================================================
+function photoSlug(p) {
+  if (!p || !p.img) return null;
+  // Skip data: URIs (placeholder SVGs) — those aren't shareable.
+  if (p.img.startsWith('data:')) return null;
+  const file = p.img.split('/').pop().split('?')[0].split('#')[0];
+  const stripped = file.match(/^(.+?)_yokitori_Ahad_Hossin\.\w+$/i);
+  if (stripped) return stripped[1];
+  return file.replace(/\.\w+$/, '');
+}
+
+// Find the index of the photo matching a given slug (case-insensitive).
+// Returns -1 if no photo matches — used so old/renamed shared links just
+// gracefully fall back to the gallery instead of erroring out.
+function indexBySlug(slug) {
+  if (!slug) return -1;
+  const lc = decodeURIComponent(slug).toLowerCase();
+  for (let i = 0; i < PHOTOS.length; i++) {
+    const s = photoSlug(PHOTOS[i]);
+    if (s && s.toLowerCase() === lc) return i;
+  }
+  return -1;
+}
+
 // Tracks whether we've pushed a history entry for the open modal so that
 // the browser/OS back button (desktop chrome back arrow, Android back
 // gesture, iOS swipe-from-edge) can close the modal instead of leaving
@@ -3356,10 +3401,15 @@ function openModal(i) {
     sc.textContent = String(n).padStart(3, '0');
   }
   // Push a history entry so the browser's back button closes this modal
-  // instead of navigating away from the site. The popstate handler below
-  // listens for the back action and runs closeModal-without-pop.
+  // instead of navigating away from the site. We also encode the photo's
+  // slug into the URL hash here, which makes the current URL shareable —
+  // anyone opening that link will land directly on this photo's details.
+  // The popstate handler below listens for the back action and runs
+  // closeModal-without-pop.
   if (!modalHistoryPushed) {
-    history.pushState({ modal: true }, '');
+    const slug = photoSlug(PHOTOS[i]);
+    const url  = slug ? '#' + slug : location.pathname + location.search;
+    history.pushState({ modal: true, slug }, '', url);
     modalHistoryPushed = true;
   }
   // Play iris close → (swap photo) → open.
@@ -3572,6 +3622,36 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+})();
+
+/* =========================================================================
+   DEEP LINK — if the URL has a #slug on load, find the matching photo
+   and auto-open its details modal. This makes any photo's URL shareable:
+   e.g. yourdomain/Photography/#Above_What_Holds_You will land the visitor
+   directly on that photo's modal, with a working back button that closes
+   the modal and reveals the gallery underneath (rather than leaving the
+   site). We rewrite the landed history entry to the bare gallery URL
+   first, so "back" always lands on the gallery — even on first visits.
+   We wait out the boot screen (1500ms in the boot IIFE above) before
+   triggering, so the boot reveal still plays for deep-link visitors.
+   ========================================================================= */
+(function deepLink(){
+  const raw = location.hash.slice(1);
+  if (!raw) return;
+  const idx = indexBySlug(raw);
+  if (idx < 0) {
+    // Unknown slug (renamed/deleted photo, typo, etc.) — strip the hash
+    // silently and let the gallery load normally. No error, no flash.
+    history.replaceState(null, '', location.pathname + location.search);
+    return;
+  }
+  // Rewrite the landed entry to the bare URL so the back button from
+  // within the modal lands on the gallery (not the visitor's previous
+  // tab). openModal will then push a fresh entry with the hash.
+  history.replaceState(null, '', location.pathname + location.search);
+  // Defer until after the boot screen dismisses (1500ms) so the iris
+  // animation feels intentional rather than racing the boot fade-out.
+  setTimeout(() => openModal(idx), 1600);
 })();
 </script>
 
