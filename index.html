@@ -1468,11 +1468,18 @@ body.arranging.filters-active .arrange-notice { display: block; }
   transition: border-color 0.3s, background 0.3s, transform 0.4s var(--ease), color 0.3s;
   z-index: 3;
 }
-.modal-close:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
-  transform: rotate(90deg);
+/* Hover-only-on-real-hover devices: on mobile a tap sticks the :hover
+   state until the user taps elsewhere, which makes the button stay
+   inverted after release. Wrapping these in (hover: hover) means the
+   inverted look is desktop-only and mobile taps just register the
+   click without leaving any leftover styling. */
+@media (hover: hover) {
+  .modal-close:hover {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    transform: rotate(90deg);
+  }
 }
 
 /* Share button — sits to the left of CLOSE, mirrors its visual language
@@ -1493,10 +1500,12 @@ body.arranging.filters-active .arrange-notice { display: block; }
   transition: border-color 0.3s, background 0.3s, color 0.3s, transform 0.4s var(--ease);
   z-index: 3;
 }
-.modal-share:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .modal-share:hover {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 /* Brief confirmation flash after a successful copy — uses the same
    green focus accent as the boot OK indicator, so it reads as
