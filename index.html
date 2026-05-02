@@ -3340,6 +3340,13 @@ function renderPhoto(i) {
   }, 150);
 }
 
+// Tracks whether we've pushed a history entry for the open modal so that
+// the browser/OS back button (desktop chrome back arrow, Android back
+// gesture, iOS swipe-from-edge) can close the modal instead of leaving
+// the site. We only push ONCE per modal session, even though renderPhoto
+// can be re-run many times (next/prev/thumb clicks) within that session.
+let modalHistoryPushed = false;
+
 function openModal(i) {
   // Bump the "shots taken" status-bar counter — photographer vibe:
   // every frame pulled up during the session counts as a shot.
@@ -3347,6 +3354,13 @@ function openModal(i) {
   if (sc) {
     const n = (parseInt(sc.textContent, 10) || 0) + 1;
     sc.textContent = String(n).padStart(3, '0');
+  }
+  // Push a history entry so the browser's back button closes this modal
+  // instead of navigating away from the site. The popstate handler below
+  // listens for the back action and runs closeModal-without-pop.
+  if (!modalHistoryPushed) {
+    history.pushState({ modal: true }, '');
+    modalHistoryPushed = true;
   }
   // Play iris close → (swap photo) → open.
   // Timing matches the CSS: blades transition 0.62s, bg fades 0.28s.
@@ -3373,7 +3387,26 @@ function closeModal() {
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   currentIdx = -1;
+  // If we have a pushed history entry (modal was opened normally), pop it
+  // so the history stack stays tidy. The popstate handler below sees the
+  // modal is already closed and does nothing — preventing a double-close.
+  if (modalHistoryPushed) {
+    modalHistoryPushed = false;
+    history.back();
+  }
 }
+
+// Browser/OS back button → close the modal (do NOT call history.back()
+// here, the back action has already happened).
+window.addEventListener('popstate', () => {
+  if (modal.classList.contains('open')) {
+    modalHistoryPushed = false;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    currentIdx = -1;
+  }
+});
 
 function nextPhoto(){ if (currentIdx < 0) return; renderPhoto((currentIdx + 1) % PHOTOS.length); }
 function prevPhoto(){ if (currentIdx < 0) return; renderPhoto((currentIdx - 1 + PHOTOS.length) % PHOTOS.length); }
