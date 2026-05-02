@@ -3100,6 +3100,7 @@ renderGrid();
   try {
     discovered = await loadFromGitHub();
     console.log(`[yokitori] auto-discovered ${discovered} photos via GitHub API`);
+    tryDeepLink();
     return;
   } catch (err) {
     console.warn('[yokitori] GitHub API discovery failed:', err.message);
@@ -3109,6 +3110,7 @@ renderGrid();
   try {
     discovered = await loadFromJsDelivr();
     console.log(`[yokitori] auto-discovered ${discovered} photos via jsDelivr (may be cached)`);
+    tryDeepLink();
   } catch (err) {
     console.warn('[yokitori] jsDelivr discovery also failed:', err.message);
     if (gridEl && !PHOTOS.length) {
@@ -3632,10 +3634,13 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
    the modal and reveals the gallery underneath (rather than leaving the
    site). We rewrite the landed history entry to the bare gallery URL
    first, so "back" always lands on the gallery — even on first visits.
-   We wait out the boot screen (1500ms in the boot IIFE above) before
-   triggering, so the boot reveal still plays for deep-link visitors.
+
+   This is a regular function (not an IIFE) because it must be called by
+   the photo-discovery bootstrap AFTER the GitHub/jsDelivr fetch resolves
+   — at script-parse time PHOTOS is empty, so indexBySlug would always
+   return -1 and the deep link would silently fail back to the gallery.
    ========================================================================= */
-(function deepLink(){
+function tryDeepLink(){
   const raw = location.hash.slice(1);
   if (!raw) return;
   const idx = indexBySlug(raw);
@@ -3649,10 +3654,24 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   // within the modal lands on the gallery (not the visitor's previous
   // tab). openModal will then push a fresh entry with the hash.
   history.replaceState(null, '', location.pathname + location.search);
-  // Defer until after the boot screen dismisses (1500ms) so the iris
-  // animation feels intentional rather than racing the boot fade-out.
-  setTimeout(() => openModal(idx), 1600);
-})();
+
+  // Wait until the boot screen has dismissed before triggering the iris
+  // animation — otherwise the iris plays underneath the boot overlay
+  // and the visitor sees nothing until boot fades, which feels broken.
+  const boot = document.querySelector('.boot');
+  const fire = () => setTimeout(() => openModal(idx), 80);
+  if (!boot || boot.classList.contains('done')) {
+    fire();
+  } else {
+    const obs = new MutationObserver(() => {
+      if (boot.classList.contains('done')) {
+        obs.disconnect();
+        fire();
+      }
+    });
+    obs.observe(boot, { attributes: true, attributeFilter: ['class'] });
+  }
+}
 </script>
 
 </body>
