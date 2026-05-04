@@ -1468,97 +1468,11 @@ body.arranging.filters-active .arrange-notice { display: block; }
   transition: border-color 0.3s, background 0.3s, transform 0.4s var(--ease), color 0.3s;
   z-index: 3;
 }
-/* Hover-only-on-real-hover devices: on mobile a tap sticks the :hover
-   state until the user taps elsewhere, which makes the button stay
-   inverted after release. Wrapping these in (hover: hover) means the
-   inverted look is desktop-only and mobile taps just register the
-   click without leaving any leftover styling. */
-@media (hover: hover) {
-  .modal-close:hover {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--bg);
-    transform: rotate(90deg);
-  }
-}
-
-/* Share button — sits to the left of CLOSE, mirrors its visual language
-   so the controls read as a paired set. On click it copies the current
-   photo's deep-link URL to the clipboard and flashes the toast below. */
-.modal-share {
-  position: absolute;
-  top: 26px; right: 84px;
-  width: 46px; height: 46px;
-  border: 1px solid var(--line-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--ink);
-  transition: border-color 0.3s, background 0.3s, color 0.3s, transform 0.4s var(--ease);
-  z-index: 3;
-}
-@media (hover: hover) {
-  .modal-share:hover {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--bg);
-  }
-}
-/* Brief confirmation flash after a successful copy — uses the same
-   green focus accent as the boot OK indicator, so it reads as
-   "ready / confirmed" within the existing visual language. */
-.modal-share.copied {
-  border-color: var(--focus);
-  color: var(--focus);
-  background: transparent;
-}
-
-/* =========================================================================
-   TOAST — bottom-center pill that flashes "LINK COPIED" after the share
-   button is clicked. Sits above the modal-strip on desktop, lower on
-   mobile (where the strip is hidden). Uses the existing dark/ink palette
-   plus the green focus dot for status-bar familiarity.
-   ========================================================================= */
-.toast {
-  position: fixed;
-  bottom: 140px;
-  left: 50%;
-  transform: translateX(-50%) translateY(14px);
-  padding: 13px 22px;
-  background: var(--bg);
-  border: 1px solid var(--line-3);
-  color: var(--ink);
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  z-index: 10001;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.32s var(--ease), transform 0.4s var(--ease);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-}
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.toast-dot {
-  width: 6px; height: 6px;
-  background: var(--focus);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--focus);
-  flex: 0 0 auto;
-}
-.toast.error .toast-dot {
-  background: var(--rec);
-  box-shadow: 0 0 8px var(--rec);
+.modal-close:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  transform: rotate(90deg);
 }
 
 .modal-label {
@@ -1731,8 +1645,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
   .modal-label { top: 20px; left: 20px; font-size: 11px; letter-spacing: 0.16em; gap: 10px; }
   .modal-label .chip { padding: 4px 8px; }
   .modal-close { top: 14px; right: 14px; width: 42px; height: 42px; font-size: 11px; }
-  .modal-share { top: 14px; right: 64px; width: 42px; height: 42px; font-size: 10px; letter-spacing: 0.14em; }
-  .toast { bottom: 40px; padding: 11px 18px; font-size: 10px; letter-spacing: 0.22em; }
   .modal-nav { display: none; }
   .kbd-hint { display: none; }
   .exif { grid-template-columns: 1fr 1fr; gap: 16px 18px; padding-top: 18px; }
@@ -1985,7 +1897,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
     <span id="mLabelNum">N° 000</span>
   </div>
   <button class="modal-close" id="mClose" aria-label="Close">CLOSE</button>
-  <button class="modal-share" id="mShare" aria-label="Copy link to this photo">SHARE</button>
   <button class="modal-nav prev" id="mPrev" aria-label="Previous">‹</button>
   <button class="modal-nav next" id="mNext" aria-label="Next">›</button>
 
@@ -2024,10 +1935,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
   </div>
 
   <div class="modal-strip" id="mStrip"></div>
-
-  <!-- Copy-to-clipboard toast (shared with the modal but lives at viewport
-       bottom so it works regardless of modal scroll/strip position). -->
-  <div class="toast" id="toast" role="status" aria-live="polite"><span class="toast-dot"></span><span id="toastMsg">LINK COPIED</span></div>
 </div>
 
 <script>
@@ -2681,12 +2588,76 @@ function resetVisibleForCurrentView() {
 }
 
 /* ============ ORDERING ============
-   Photos are shuffled on every page load and then rearranged so that no
-   two tall (portrait) photos appear consecutively in the sequence. With
-   the masonry flowing column-first, keeping talls apart in the linear
-   sequence dramatically reduces the chance of seeing them side-by-side
-   visually — which is the rule we promised. Order is cached in
-   window.__yokitoriOrderMap so filter changes don't reshuffle. */
+   Photos are sorted newest-first by capture date so the latest work
+   leads the gallery. After the date sort, a small layout-polish pass
+   nudges things so that no two tall (portrait) photos sit adjacent in
+   the linear sequence — with the masonry flowing column-first, two
+   adjacent items land stacked in the same column, and stacking two
+   portraits there reads as a heavy black bar that breaks the rhythm.
+   The polish only swaps a portrait a slot or two later, so the date
+   order is preserved almost exactly. The final order is cached in
+   window.__yokitoriOrderMap so applying or clearing year/month filters
+   doesn't disturb the sequence — the same photo always sits in the
+   same slot. */
+
+// Pull a comparable YYYYMMDDsss-style number out of a photo. Tries the
+// filename in p.img first (most reliable — repo photos encode the date
+// as dd_mm_yyyy plus an optional sequence), then falls back to parsing
+// the human-readable p.date string for legacy/inline entries. Photos
+// that can't be dated drop to the end of the list.
+function photoDateKey(p) {
+  if (!p) return -1;
+
+  // 1) Filename in the CDN URL — e.g. "15_03_2024_yokitori.webp"
+  if (p.img) {
+    const fname  = String(p.img).split('/').pop().split('?')[0];
+    const parsed = parsePhotoFilename(fname);
+    if (parsed) {
+      return parsed.year * 10000000
+           + parsed.month * 100000
+           + parsed.day   * 1000
+           + (parsed.seq || 0);
+    }
+  }
+
+  // 2) Fallback: pull year + month-name out of p.date ("15 Mar 2024",
+  //    "Mar 2024", etc.). Day isn't reliably extractable from free-form
+  //    strings, so we settle for month-level granularity here — that's
+  //    enough to keep dated entries roughly in the right place.
+  if (p.date) {
+    const s      = String(p.date);
+    const yMatch = s.match(/\b(19|20)\d{2}\b/);
+    const mMatch = s.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+    if (yMatch) {
+      const y        = parseInt(yMatch[0], 10);
+      const abbr     = mMatch ? mMatch[0].slice(0, 3).toLowerCase() : '';
+      const monthIdx = MONTH_NAMES.findIndex(n => n.toLowerCase() === abbr);
+      const m        = monthIdx >= 0 ? monthIdx + 1 : 0;
+      return y * 10000000 + m * 100000;
+    }
+  }
+
+  return -1;
+}
+
+// Stable sort by date desc. Ties (same date, or both undated) keep the
+// loader's original input order, which itself comes in date-sorted from
+// the GitHub fetch — so equal dates fall back to the seq-then-name
+// ordering established upstream. After the date sort we run a small
+// layout-polish pass so two portraits don't end up stacked in a column.
+function orderByDate(photos) {
+  const sorted = photos
+    .map((p, i) => ({ p, i, k: photoDateKey(p) }))
+    .sort((a, b) => (b.k - a.k) || (a.i - b.i))
+    .map(x => x.p);
+  return spreadTallApart(sorted);
+}
+
+// True if a photo is in portrait/tall orientation. Orientation is set
+// either from the sidecar JSON or auto-detected by the loader once the
+// image has loaded — until then orientation is undefined and the photo
+// is treated as non-tall, which is fine because the order map is
+// rebuilt after the orientation backfill completes.
 function isPhotoTall(p) {
   if (!p) return false;
   if (p.orientation === 'tall') return true;
@@ -2695,22 +2666,27 @@ function isPhotoTall(p) {
   return false;
 }
 
-function shuffleAndSpread(photos) {
-  const arr = photos.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  // Three passes: find any tall-followed-by-tall, swap the second tall
-  // forward with the nearest non-tall. Bounded so we terminate even if
-  // the set is >50% tall (in which case some adjacencies are inevitable).
+// Layout-polish pass: walk the array and, whenever two tall photos sit
+// adjacent, swap the second one with the nearest later non-tall — but
+// only if that non-tall is within SEARCH_WINDOW slots. The window cap
+// keeps the polish honest with its "small local nudge" promise: in a
+// gallery that is mostly portraits we'd otherwise teleport a single
+// landscape across the whole sequence to fill every gap, breaking the
+// date order more than it's worth. With 3 columns of masonry, anything
+// further than ~6 slots is in a different column anyway and wouldn't
+// break up the visual collision. Three bounded passes handle chains;
+// we exit early once a pass finds nothing to fix.
+function spreadTallApart(arr) {
+  const SEARCH_WINDOW = 6;
+  const out = arr.slice();
   for (let pass = 0; pass < 3; pass++) {
     let swaps = 0;
-    for (let i = 0; i < arr.length - 1; i++) {
-      if (isPhotoTall(arr[i]) && isPhotoTall(arr[i + 1])) {
-        for (let j = i + 2; j < arr.length; j++) {
-          if (!isPhotoTall(arr[j])) {
-            [arr[i + 1], arr[j]] = [arr[j], arr[i + 1]];
+    for (let i = 0; i < out.length - 1; i++) {
+      if (isPhotoTall(out[i]) && isPhotoTall(out[i + 1])) {
+        const limit = Math.min(out.length, i + 2 + SEARCH_WINDOW);
+        for (let j = i + 2; j < limit; j++) {
+          if (!isPhotoTall(out[j])) {
+            [out[i + 1], out[j]] = [out[j], out[i + 1]];
             swaps++;
             break;
           }
@@ -2719,14 +2695,15 @@ function shuffleAndSpread(photos) {
     }
     if (swaps === 0) break;
   }
-  return arr;
+  return out;
 }
 
 function currentList() {
-  // Establish a persistent shuffle order on first use. Does NOT re-roll
-  // when filters change, so filter-and-unfilter returns to the same view.
+  // Establish a persistent date-sorted order on first use. Filtering by
+  // year/month doesn't recompute the order — it just hides entries —
+  // so removing a filter restores the exact same sequence.
   if (!window.__yokitoriOrderMap) {
-    const ordered = shuffleAndSpread(PHOTOS);
+    const ordered = orderByDate(PHOTOS);
     window.__yokitoriOrderMap = new Map(ordered.map((p, i) => [p, i]));
   }
 
@@ -2734,7 +2711,7 @@ function currentList() {
   if (activeYear  !== 'all') list = list.filter(p => p.year  === activeYear);
   if (activeMonth !== 'all') list = list.filter(p => p.month === activeMonth);
 
-  // Apply the cached shuffle order
+  // Apply the cached order
   const om = window.__yokitoriOrderMap;
   list.sort((a, b) => (om.get(a) ?? 0) - (om.get(b) ?? 0));
   return list;
@@ -3270,9 +3247,6 @@ const mLabelNum = document.getElementById('mLabelNum');
 const mClose = document.getElementById('mClose');
 const mPrev = document.getElementById('mPrev');
 const mNext = document.getElementById('mNext');
-const mShare = document.getElementById('mShare');
-const toast  = document.getElementById('toast');
-const toastMsg = document.getElementById('toastMsg');
 const mStrip = document.getElementById('mStrip');
 
 /* Hold-to-magnify on the modal image.
@@ -3562,71 +3536,6 @@ function prevPhoto(){ if (currentIdx < 0) return; renderPhoto((currentIdx - 1 + 
 mClose.addEventListener('click', closeModal);
 mPrev.addEventListener('click', prevPhoto);
 mNext.addEventListener('click', nextPhoto);
-
-/* =========================================================================
-   SHARE — copy a deep-link to the currently-displayed photo to clipboard,
-   then briefly flash a confirmation toast at the bottom of the viewport.
-   The link uses the photo's filename slug (e.g. #Above_What_Holds_You) so
-   recipients land directly on this photo's modal. Falls back to a hidden
-   textarea + execCommand for browsers without async clipboard support
-   (older iOS Safari / non-secure contexts).
-   ========================================================================= */
-let toastTimer = null;
-function showToast(msg, isError) {
-  if (!toast) return;
-  if (toastMsg) toastMsg.textContent = msg;
-  toast.classList.toggle('error', !!isError);
-  toast.classList.add('show');
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 1900);
-}
-
-function legacyCopy(text) {
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.top = '0';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    ta.setSelectionRange(0, text.length);
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch (e) { return false; }
-}
-
-function shareCurrentPhoto() {
-  if (currentIdx < 0) return;
-  const slug = photoSlug(PHOTOS[currentIdx]);
-  if (!slug) {
-    showToast('CANNOT SHARE THIS FRAME', true);
-    return;
-  }
-  // Build the canonical share URL from origin + path + slug. We don't
-  // just read location.href in case any tracking params snuck in.
-  const url = location.origin + location.pathname + '#' + slug;
-
-  const onSuccess = () => {
-    showToast('LINK COPIED');
-    if (mShare) {
-      mShare.classList.add('copied');
-      setTimeout(() => mShare.classList.remove('copied'), 1800);
-    }
-  };
-  const onFail = () => showToast('COPY FAILED', true);
-
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(url).then(onSuccess).catch(() => {
-      legacyCopy(url) ? onSuccess() : onFail();
-    });
-  } else {
-    legacyCopy(url) ? onSuccess() : onFail();
-  }
-}
-if (mShare) mShare.addEventListener('click', shareCurrentPhoto);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 document.addEventListener('keydown', (e) => {
   if (!modal.classList.contains('open')) return;
