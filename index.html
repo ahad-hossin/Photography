@@ -1276,7 +1276,10 @@ body.arranging.filters-active .arrange-notice { display: block; }
   justify-content: space-between;
   padding: 8px 0;
   overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge legacy */
 }
+.modal-data::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 .md-head {
   font-family: var(--f-mono);
   font-size: 12px;
