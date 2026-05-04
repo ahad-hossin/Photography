@@ -1596,33 +1596,27 @@ body.arranging.filters-active .arrange-notice { display: block; }
   .modal-data { scrollbar-width: none; -ms-overflow-style: none; }
   .modal-data::-webkit-scrollbar { display: none; }
   /* Image wrap: size to content, no forced aspect ratio. The image inside
-     displays at its natural aspect, capped to 50vh so a tall portrait
-     doesn't dominate the viewport and crowd out the details below.
-     The frame uses `width: fit-content` so it hugs the actual image —
-     this kills the dead whitespace that a 100%-wide frame leaves around
-     a portrait, and lets the corner viewfinder marks land on the
-     photo's real corners. Overrides the JS frame-sizing which assumes
-     a fixed container — on mobile we let the image drive its own box. */
+     displays at its natural aspect, capped to 60vh so it never dominates
+     the viewport. Overrides the JS frame-sizing which assumes a fixed
+     container — on mobile we just let the image drive its own box. */
   .modal-img-wrap {
     height: auto;
     aspect-ratio: unset;
-    max-height: 50vh;
+    max-height: 60vh;
     flex-shrink: 0;
     display: block;
     min-width: 0;
   }
   .modal-img-frame {
-    width: fit-content !important;
-    max-width: 100%;
+    width: 100% !important;
     height: auto !important;
-    max-height: 50vh;
+    max-height: 60vh;
     margin: 0 auto;
   }
   .modal-img-wrap img {
-    width: auto;
+    width: 100%;
     height: auto;
-    max-width: 100%;
-    max-height: 50vh;
+    max-height: 60vh;
     object-fit: contain;
   }
   /* Data column: allow text to shrink/wrap inside the flex parent */
