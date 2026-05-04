@@ -1013,6 +1013,15 @@ body.arranging.filters-active .arrange-notice { display: block; }
   transition: opacity 0.6s var(--ease);
 }
 .status.in { opacity: 1; }
+/* Modal opaque-ish backdrop still lets the fixed status bar bleed through
+   as a faint band at the bottom (its border-top + own backdrop-filter
+   make it visible). Hide it while the modal is open — most obvious on
+   mobile where viewport height is short. */
+body:has(.modal.open) .status {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
 .st-cell { display: flex; align-items: center; gap: 10px; }
 .st-cell .k { color: var(--ink-dimmer); }
