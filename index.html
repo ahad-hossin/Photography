@@ -1173,7 +1173,7 @@ body.arranging.filters-active .arrange-notice { display: block; }
   inset: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(360px, 1fr);
-  padding: 68px 48px 120px;
+  padding: 68px 96px 120px;
   gap: 40px;
   transform: translateY(20px);
   opacity: 0;
@@ -1513,8 +1513,8 @@ body.arranging.filters-active .arrange-notice { display: block; }
   z-index: 5;
 }
 .modal-nav:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
-.modal-nav.prev { left: 16px; }
-.modal-nav.next { right: 16px; }
+.modal-nav.prev { left: 24px; }
+.modal-nav.next { right: 24px; }
 
 /* Thumbnail strip at the bottom of the modal */
 .modal-strip {
@@ -1557,27 +1557,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
   width: 6px; height: 6px;
   background: var(--rec);
   border-radius: 50%;
-}
-
-/* Keyboard hint */
-.kbd-hint {
-  position: absolute;
-  bottom: 104px;
-  right: 54px;
-  display: flex; gap: 6px; align-items: center;
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  z-index: 4;
-}
-.kbd {
-  padding: 4px 7px;
-  border: 1px solid var(--line-2);
-  color: var(--ink);
-  min-width: 22px;
-  text-align: center;
 }
 
 @media (max-width: 900px) {
@@ -1649,7 +1628,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
   .modal-label .chip { padding: 4px 8px; }
   .modal-close { top: 14px; right: 14px; width: 42px; height: 42px; font-size: 11px; }
   .modal-nav { display: none; }
-  .kbd-hint { display: none; }
   .exif { grid-template-columns: 1fr 1fr; gap: 16px 18px; padding-top: 18px; }
   .exif-cell .v { font-size: 13px; }
   .exif-cell .k { font-size: 10px; letter-spacing: 0.16em; }
@@ -1928,13 +1906,6 @@ body.arranging.filters-active .arrange-notice { display: block; }
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="kbd-hint">
-    <span class="kbd">←</span><span class="kbd">→</span>
-    <span style="margin-left:6px">NAV</span>
-    <span class="kbd" style="margin-left:10px">ESC</span>
-    <span>CLOSE</span>
   </div>
 
   <div class="modal-strip" id="mStrip"></div>
